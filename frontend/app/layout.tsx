@@ -20,6 +20,11 @@ const monoFont = IBM_Plex_Mono({
 export const metadata: Metadata = {
   title: "Anime Tracker",
   description: "Track anime progress, browse trending shows, and keep up with release calendars.",
+  icons: {
+    icon: "/anime-tracker-logo.png",
+    shortcut: "/anime-tracker-logo.png",
+    apple: "/anime-tracker-logo.png",
+  },
 };
 
 export default function RootLayout({

@@ -1,3 +1,4 @@
+import Image from "next/image";
 import { ArrowUpRight, Sparkles, Workflow } from "lucide-react";
 
 import { AnimeLibrary } from "@/components/anime-library";
@@ -18,6 +19,23 @@ export default async function HomePage() {
       <section className="overflow-hidden rounded-[2.25rem] border border-white/60 bg-white/70 p-6 shadow-card backdrop-blur dark:border-white/10 dark:bg-slate-950/70 md:p-8">
         <div className="flex flex-col gap-8 lg:flex-row lg:items-start lg:justify-between">
           <div className="max-w-3xl">
+            <div className="inline-flex items-center gap-4 rounded-full border border-white/70 bg-white/70 px-4 py-3 shadow-sm backdrop-blur dark:border-white/10 dark:bg-slate-900/70">
+              <div className="relative h-12 w-12 overflow-hidden rounded-2xl">
+                <Image
+                  src="/anime-tracker-logo.png"
+                  alt="Anime Tracker logo"
+                  fill
+                  className="object-cover"
+                  priority
+                />
+              </div>
+              <div>
+                <p className="text-lg font-semibold text-slate-950 dark:text-white">Anime Tracker</p>
+                <p className="text-xs uppercase tracking-[0.28em] text-slate-500 dark:text-slate-400">
+                  Your anime command center
+                </p>
+              </div>
+            </div>
             <div className="inline-flex items-center gap-2 rounded-full border border-orange-200 bg-orange-50 px-4 py-2 text-xs font-semibold uppercase tracking-[0.25em] text-orange-700 dark:border-orange-500/30 dark:bg-orange-500/10 dark:text-orange-200">
               <Sparkles className="h-4 w-4" />
               AniList powered

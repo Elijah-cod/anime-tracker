@@ -1,0 +1,11 @@
+{
+  "name": "anime-tracker-workspace",
+  "private": true,
+  "version": "0.1.0",
+  "scripts": {
+    "frontend:dev": "npm --prefix frontend run dev",
+    "frontend:build": "npm --prefix frontend run build",
+    "backend:dev": "uvicorn app.main:app --reload --app-dir backend",
+    "backend:test": "python -m pytest backend/tests"
+  }
+}

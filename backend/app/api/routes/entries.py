@@ -17,7 +17,7 @@ def _demo_entries() -> list:
         AnimeEntryRead(
             anime_id=16498,
             title="Attack on Titan",
-            cover_image="https://s4.anilist.co/file/anilistcdn/media/anime/cover/large/bx16498-8gQ5ooL0Y2dc.jpg",
+            cover_image="/anime-poster-placeholder.svg",
             status="WATCHING",
             episodes_watched=18,
             total_episodes=25,
@@ -26,7 +26,7 @@ def _demo_entries() -> list:
         AnimeEntryRead(
             anime_id=1535,
             title="Death Note",
-            cover_image="https://s4.anilist.co/file/anilistcdn/media/anime/cover/large/bx1535.jpg",
+            cover_image="/anime-poster-placeholder.svg",
             status="COMPLETED",
             episodes_watched=37,
             total_episodes=37,

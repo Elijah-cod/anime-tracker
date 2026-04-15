@@ -1,8 +1,8 @@
 "use client";
 
-import Image from "next/image";
 import { startTransition, useOptimistic, useState } from "react";
 
+import { SafeImage } from "@/components/safe-image";
 import { incrementEpisodeProgress } from "@/lib/api";
 import { AnimeEntry } from "@/types/anime";
 
@@ -13,6 +13,20 @@ const statusAccent: Record<string, string> = {
   PLANNING: "bg-sky-500/15 text-sky-700 ring-sky-300 dark:text-sky-200 dark:ring-sky-500/30",
   DROPPED: "bg-rose-500/15 text-rose-700 ring-rose-300 dark:text-rose-200 dark:ring-rose-500/30",
 };
+
+function formatScore(score: AnimeEntry["score"]): string {
+  if (score === null || score === undefined || score === "") {
+    return "No score yet";
+  }
+
+  const numericScore = typeof score === "string" ? Number.parseFloat(score) : score;
+
+  if (Number.isNaN(numericScore)) {
+    return "No score yet";
+  }
+
+  return `${numericScore.toFixed(1)} score`;
+}
 
 export function CurrentProgress({ entries }: { entries: AnimeEntry[] }) {
   const [baseEntries, setBaseEntries] = useState(entries);
@@ -67,7 +81,7 @@ export function CurrentProgress({ entries }: { entries: AnimeEntry[] }) {
           >
             <div className="relative h-28 overflow-hidden rounded-2xl">
               {entry.cover_image ? (
-                <Image src={entry.cover_image} alt={entry.title} fill className="object-cover" />
+                <SafeImage src={entry.cover_image} alt={entry.title} fill className="object-cover" />
               ) : (
                 <div className="h-full w-full bg-slate-200 dark:bg-slate-800" />
               )}
@@ -90,7 +104,7 @@ export function CurrentProgress({ entries }: { entries: AnimeEntry[] }) {
                   <span>
                     {entry.episodes_watched} / {entry.total_episodes ?? "?"} episodes
                   </span>
-                  <span>{entry.score ? `${entry.score.toFixed(1)} score` : "No score yet"}</span>
+                  <span>{formatScore(entry.score)}</span>
                 </div>
                 <div className="h-2 rounded-full bg-slate-200 dark:bg-slate-800">
                   <div

@@ -3,6 +3,16 @@ import { AnimeCalendarItem, AnimeEntry, AnimeNode } from "@/types/anime";
 
 const API_URL = process.env.NEXT_PUBLIC_API_URL ?? "http://localhost:8000/api/v1";
 
+function normalizeEntry(entry: AnimeEntry): AnimeEntry {
+  const parsedScore =
+    typeof entry.score === "string" ? Number.parseFloat(entry.score) : entry.score;
+
+  return {
+    ...entry,
+    score: Number.isNaN(parsedScore ?? NaN) ? null : parsedScore,
+  };
+}
+
 async function fetchJson<T>(path: string): Promise<T> {
   const response = await fetch(`${API_URL}${path}`, {
     next: { revalidate: 300 },
@@ -38,7 +48,7 @@ export async function getReleaseCalendar(): Promise<AnimeCalendarItem[]> {
 export async function getEntries(): Promise<AnimeEntry[]> {
   try {
     const response = await fetchJson<{ items: AnimeEntry[] }>("/entries");
-    return response.items;
+    return response.items.map(normalizeEntry);
   } catch {
     return mockEntries;
   }
@@ -64,7 +74,7 @@ export async function incrementEpisodeProgress(entry: AnimeEntry): Promise<Anime
       };
     }
 
-    return response.json();
+    return normalizeEntry(await response.json());
   } catch {
     return {
       ...entry,

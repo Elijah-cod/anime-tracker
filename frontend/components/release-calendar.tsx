@@ -1,6 +1,6 @@
-import Image from "next/image";
 import { format, fromUnixTime } from "date-fns";
 
+import { SafeImage } from "@/components/safe-image";
 import { AnimeCalendarItem } from "@/types/anime";
 
 export function ReleaseCalendar({ items }: { items: AnimeCalendarItem[] }) {
@@ -26,7 +26,7 @@ export function ReleaseCalendar({ items }: { items: AnimeCalendarItem[] }) {
           >
             <div className="relative h-[88px] overflow-hidden rounded-2xl">
               {item.cover_image ? (
-                <Image src={item.cover_image} alt={item.title.romaji} fill className="object-cover" />
+                <SafeImage src={item.cover_image} alt={item.title.romaji} fill className="object-cover" />
               ) : (
                 <div className="h-full w-full bg-slate-200 dark:bg-slate-800" />
               )}

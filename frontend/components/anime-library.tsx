@@ -1,9 +1,9 @@
 "use client";
 
-import Image from "next/image";
 import { Search } from "lucide-react";
 import { useDeferredValue, useState } from "react";
 
+import { SafeImage } from "@/components/safe-image";
 import { AnimeNode } from "@/types/anime";
 
 export function AnimeLibrary({ items }: { items: AnimeNode[] }) {
@@ -48,7 +48,7 @@ export function AnimeLibrary({ items }: { items: AnimeNode[] }) {
           >
             <div className="relative aspect-[3/4]">
               {item.cover_image ? (
-                <Image
+                <SafeImage
                   src={item.cover_image}
                   alt={item.title.romaji}
                   fill

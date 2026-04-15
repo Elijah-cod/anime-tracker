@@ -30,5 +30,5 @@ export type AnimeEntry = {
   status: string;
   episodes_watched: number;
   total_episodes?: number | null;
-  score?: number | null;
+  score?: number | string | null;
 };

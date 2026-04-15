@@ -1,6 +1,6 @@
 import { AnimeCalendarItem, AnimeEntry, AnimeNode } from "@/types/anime";
 
-const placeholderPoster = "/anime-poster-placeholder.svg";
+const livePoster = (animeId: number) => `/api/poster/${animeId}`;
 
 export const mockTrending: AnimeNode[] = [
   {
@@ -8,7 +8,7 @@ export const mockTrending: AnimeNode[] = [
     title: { romaji: "Sousou no Frieren", english: "Frieren: Beyond Journey's End" },
     episodes: 28,
     average_score: 91,
-    cover_image: placeholderPoster,
+    cover_image: livePoster(151807),
     next_airing_episode: null,
   },
   {
@@ -16,14 +16,14 @@ export const mockTrending: AnimeNode[] = [
     title: { romaji: "Dungeon Meshi", english: "Delicious in Dungeon" },
     episodes: 24,
     average_score: 86,
-    cover_image: placeholderPoster,
+    cover_image: livePoster(145139),
   },
   {
     id: 170942,
     title: { romaji: "Dandadan", english: "DAN DA DAN" },
     episodes: 12,
     average_score: 88,
-    cover_image: placeholderPoster,
+    cover_image: livePoster(170942),
   },
 ];
 
@@ -31,14 +31,14 @@ export const mockCalendar: AnimeCalendarItem[] = [
   {
     id: 170942,
     title: { romaji: "Dandadan", english: "DAN DA DAN" },
-    cover_image: placeholderPoster,
+    cover_image: livePoster(170942),
     airing_at: 1765971600,
     episode: 9,
   },
   {
     id: 1535,
     title: { romaji: "Death Note", english: "Death Note" },
-    cover_image: placeholderPoster,
+    cover_image: livePoster(1535),
     airing_at: 1765993200,
     episode: 14,
   },
@@ -48,7 +48,7 @@ export const mockEntries: AnimeEntry[] = [
   {
     anime_id: 16498,
     title: "Attack on Titan",
-    cover_image: placeholderPoster,
+    cover_image: livePoster(16498),
     status: "WATCHING",
     episodes_watched: 18,
     total_episodes: 25,
@@ -57,7 +57,7 @@ export const mockEntries: AnimeEntry[] = [
   {
     anime_id: 21,
     title: "One Piece",
-    cover_image: placeholderPoster,
+    cover_image: livePoster(21),
     status: "WATCHING",
     episodes_watched: 1091,
     total_episodes: null,
@@ -66,7 +66,7 @@ export const mockEntries: AnimeEntry[] = [
   {
     anime_id: 1535,
     title: "Death Note",
-    cover_image: placeholderPoster,
+    cover_image: livePoster(1535),
     status: "COMPLETED",
     episodes_watched: 37,
     total_episodes: 37,

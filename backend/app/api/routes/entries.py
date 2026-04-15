@@ -17,7 +17,7 @@ def _demo_entries() -> list:
         AnimeEntryRead(
             anime_id=16498,
             title="Attack on Titan",
-            cover_image="/anime-poster-placeholder.svg",
+            cover_image="/api/poster/16498",
             status="WATCHING",
             episodes_watched=18,
             total_episodes=25,
@@ -26,7 +26,7 @@ def _demo_entries() -> list:
         AnimeEntryRead(
             anime_id=1535,
             title="Death Note",
-            cover_image="/anime-poster-placeholder.svg",
+            cover_image="/api/poster/1535",
             status="COMPLETED",
             episodes_watched=37,
             total_episodes=37,

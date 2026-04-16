@@ -174,6 +174,20 @@ export async function updateEntry(
   }
 }
 
+export async function deleteEntry(animeId: number): Promise<void> {
+  try {
+    const response = await fetch(`${API_URL}/entries/${animeId}`, {
+      method: "DELETE",
+    });
+
+    if (!response.ok) {
+      throw new Error("Delete entry request failed");
+    }
+  } catch {
+    return;
+  }
+}
+
 export async function getReviews(): Promise<Review[]> {
   try {
     const response = await fetchJson<{ items: Review[] }>("/reviews");

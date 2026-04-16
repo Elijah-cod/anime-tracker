@@ -1,10 +1,10 @@
 "use client";
 
-import { Check, Filter, LoaderCircle, Star } from "lucide-react";
+import { Check, Filter, LoaderCircle, Star, Trash2 } from "lucide-react";
 import { useMemo, useState, useTransition } from "react";
 
 import { SafeImage } from "@/components/safe-image";
-import { updateEntry } from "@/lib/api";
+import { deleteEntry, updateEntry } from "@/lib/api";
 import { AnimeEntry } from "@/types/anime";
 
 const STATUSES = ["ALL", "WATCHING", "PLANNING", "COMPLETED", "PAUSED", "DROPPED"] as const;
@@ -44,6 +44,7 @@ export function LibraryManager({ entries }: { entries: AnimeEntry[] }) {
     ),
   );
   const [savingId, setSavingId] = useState<number | null>(null);
+  const [deletingId, setDeletingId] = useState<number | null>(null);
   const [message, setMessage] = useState<string | null>(null);
   const [isPending, startTransition] = useTransition();
 
@@ -53,6 +54,15 @@ export function LibraryManager({ entries }: { entries: AnimeEntry[] }) {
     }
     return libraryEntries.filter((entry) => entry.status === filter);
   }, [filter, libraryEntries]);
+
+  const statusCounts = useMemo(
+    () =>
+      libraryEntries.reduce<Record<string, number>>((counts, entry) => {
+        counts[entry.status] = (counts[entry.status] ?? 0) + 1;
+        return counts;
+      }, {}),
+    [libraryEntries],
+  );
 
   function updateDraft(animeId: number, patch: Partial<DraftState[number]>) {
     setDrafts((current) => ({
@@ -91,6 +101,25 @@ export function LibraryManager({ entries }: { entries: AnimeEntry[] }) {
         setMessage("Could not save that entry right now.");
       } finally {
         setSavingId(null);
+      }
+    });
+  }
+
+  function handleDelete(entry: AnimeEntry) {
+    setDeletingId(entry.anime_id);
+    setMessage(null);
+
+    startTransition(async () => {
+      try {
+        await deleteEntry(entry.anime_id);
+        setLibraryEntries((current) =>
+          current.filter((item) => item.anime_id !== entry.anime_id),
+        );
+        setMessage(`Removed ${entry.title} from your tracker.`);
+      } catch {
+        setMessage("Could not remove that entry right now.");
+      } finally {
+        setDeletingId(null);
       }
     });
   }
@@ -135,6 +164,17 @@ export function LibraryManager({ entries }: { entries: AnimeEntry[] }) {
         ))}
       </div>
 
+      <div className="mt-4 flex flex-wrap gap-2">
+        {STATUSES.filter((status) => status !== "ALL").map((status) => (
+          <div
+            key={`count-${status}`}
+            className="rounded-full border border-slate-200 bg-white px-3 py-1 text-xs font-semibold text-slate-600 dark:border-slate-800 dark:bg-slate-900 dark:text-slate-300"
+          >
+            {status}: {statusCounts[status] ?? 0}
+          </div>
+        ))}
+      </div>
+
       {message ? (
         <p className="mt-4 text-sm text-slate-600 dark:text-slate-300">{message}</p>
       ) : null}
@@ -146,6 +186,7 @@ export function LibraryManager({ entries }: { entries: AnimeEntry[] }) {
             score: entry.score === null || entry.score === undefined ? "" : String(entry.score),
           };
           const isSaving = savingId === entry.anime_id && isPending;
+          const isDeleting = deletingId === entry.anime_id && isPending;
 
           return (
             <article
@@ -200,11 +241,11 @@ export function LibraryManager({ entries }: { entries: AnimeEntry[] }) {
                 </div>
               </div>
 
-              <div className="flex items-center">
+              <div className="flex flex-col items-stretch gap-3">
                 <button
                   type="button"
                   onClick={() => handleSave(entry)}
-                  disabled={isSaving}
+                  disabled={isSaving || isDeleting}
                   className="inline-flex rounded-full bg-slate-950 px-5 py-3 text-sm font-semibold text-white transition hover:bg-slate-800 disabled:cursor-not-allowed disabled:opacity-70 dark:bg-emerald-500 dark:text-slate-950 dark:hover:bg-emerald-400"
                 >
                   {isSaving ? (
@@ -216,6 +257,25 @@ export function LibraryManager({ entries }: { entries: AnimeEntry[] }) {
                     <span className="inline-flex items-center gap-2">
                       <Check className="h-4 w-4" />
                       Save changes
+                    </span>
+                  )}
+                </button>
+
+                <button
+                  type="button"
+                  onClick={() => handleDelete(entry)}
+                  disabled={isSaving || isDeleting}
+                  className="inline-flex rounded-full border border-rose-200 bg-white px-5 py-3 text-sm font-semibold text-rose-700 transition hover:bg-rose-50 disabled:cursor-not-allowed disabled:opacity-70 dark:border-rose-500/30 dark:bg-slate-950 dark:text-rose-300 dark:hover:bg-rose-500/10"
+                >
+                  {isDeleting ? (
+                    <span className="inline-flex items-center gap-2">
+                      <LoaderCircle className="h-4 w-4 animate-spin" />
+                      Removing
+                    </span>
+                  ) : (
+                    <span className="inline-flex items-center gap-2">
+                      <Trash2 className="h-4 w-4" />
+                      Remove
                     </span>
                   )}
                 </button>

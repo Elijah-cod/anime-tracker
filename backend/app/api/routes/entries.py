@@ -116,3 +116,19 @@ async def update_entry_progress(
     db.commit()
     db.refresh(entry)
     return serialize_entry(entry)
+
+
+@router.delete("/{anime_id}", status_code=204)
+async def delete_entry(anime_id: int, db: Session = Depends(get_db)) -> None:
+    user = get_or_create_demo_user(db)
+    entry = db.scalar(
+        select(AnimeEntry).where(
+            AnimeEntry.user_id == user.id,
+            AnimeEntry.anime_id == anime_id,
+        )
+    )
+    if not entry:
+        raise HTTPException(status_code=404, detail="Anime entry not found")
+
+    db.delete(entry)
+    db.commit()

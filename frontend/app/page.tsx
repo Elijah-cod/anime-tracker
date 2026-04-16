@@ -1,5 +1,6 @@
 import Image from "next/image";
 import { cookies } from "next/headers";
+import { redirect } from "next/navigation";
 import { ArrowUpRight, Sparkles, Workflow } from "lucide-react";
 
 import { ACCOUNT_COOKIE_NAME, decodeActiveUserEmail } from "@/lib/account-session";
@@ -34,6 +35,10 @@ export default async function HomePage() {
     getReviews(activeUserEmail),
     getLibrarySummary(activeUserEmail),
   ]);
+
+  if (!activeUserEmail || currentUser.email !== activeUserEmail) {
+    redirect("/auth");
+  }
 
   return (
     <main className="mx-auto flex min-h-screen w-full max-w-[1440px] flex-col gap-8 px-4 py-6 md:px-8 md:py-8">

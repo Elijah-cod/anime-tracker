@@ -1,7 +1,11 @@
 export const ACCOUNT_COOKIE_NAME = "anime_tracker_user_email";
 
 export function setActiveUserEmail(email: string) {
-  document.cookie = `${ACCOUNT_COOKIE_NAME}=${encodeURIComponent(email)}; path=/; max-age=${60 * 60 * 24 * 365}; samesite=lax`;
+  document.cookie = `${ACCOUNT_COOKIE_NAME}=${encodeURIComponent(email.trim().toLowerCase())}; path=/; max-age=${60 * 60 * 24 * 365}; samesite=lax`;
+}
+
+export function clearActiveUserEmail() {
+  document.cookie = `${ACCOUNT_COOKIE_NAME}=; path=/; max-age=0; samesite=lax`;
 }
 
 export function decodeActiveUserEmail(value?: string) {
@@ -10,8 +14,8 @@ export function decodeActiveUserEmail(value?: string) {
   }
 
   try {
-    return decodeURIComponent(value);
+    return decodeURIComponent(value).trim().toLowerCase();
   } catch {
-    return value;
+    return value.trim().toLowerCase();
   }
 }

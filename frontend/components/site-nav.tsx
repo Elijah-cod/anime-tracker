@@ -1,6 +1,7 @@
 import Image from "next/image";
 import Link from "next/link";
 
+import { SignOutButton } from "@/components/sign-out-button";
 import { User } from "@/types/anime";
 
 const NAV_ITEMS = [
@@ -57,10 +58,13 @@ export function SiteNav({
           </nav>
         </div>
 
-        <div className="rounded-full border border-slate-200 bg-slate-50 px-4 py-2 text-sm text-slate-600 dark:border-slate-800 dark:bg-slate-900 dark:text-slate-300">
-          <span className="font-semibold text-slate-950 dark:text-slate-50">{currentUser.username}</span>
-          <span className="mx-2 text-slate-400">•</span>
-          <span>{currentUser.email}</span>
+        <div className="flex flex-wrap items-center gap-3">
+          <div className="rounded-full border border-slate-200 bg-slate-50 px-4 py-2 text-sm text-slate-600 dark:border-slate-800 dark:bg-slate-900 dark:text-slate-300">
+            <span className="font-semibold text-slate-950 dark:text-slate-50">{currentUser.username}</span>
+            <span className="mx-2 text-slate-400">•</span>
+            <span>{currentUser.email}</span>
+          </div>
+          <SignOutButton />
         </div>
       </div>
     </header>

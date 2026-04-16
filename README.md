@@ -333,6 +333,7 @@ Recommended production values:
 - `APP_ENV=production`
 - `SEED_DEMO_DATA=false`
 - `ALLOW_ORIGINS=https://your-frontend-domain.example`
+- `DATABASE_URL` can be supplied as `postgresql+psycopg://...`, `postgresql://...`, or `postgres://...`
 
 ## Useful Scripts
 
@@ -421,6 +422,10 @@ Required environment variables:
 - `ALLOW_ORIGINS=https://your-vercel-domain.vercel.app`
 - `APP_ENV=production`
 - `SEED_DEMO_DATA=false`
+
+Notes:
+
+- The backend normalizes `postgres://...` and `postgresql://...` URLs to the `psycopg` driver automatically for hosted Postgres providers.
 
 ## Railway
 

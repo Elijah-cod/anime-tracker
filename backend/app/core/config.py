@@ -5,6 +5,18 @@ from pydantic import Field
 from pydantic_settings import BaseSettings, SettingsConfigDict
 
 
+def normalize_database_url(raw_url: str) -> str:
+    cleaned = raw_url.strip().strip("\"'")
+
+    if cleaned.startswith("postgres://"):
+        return cleaned.replace("postgres://", "postgresql+psycopg://", 1)
+
+    if cleaned.startswith("postgresql://") and "+psycopg" not in cleaned:
+        return cleaned.replace("postgresql://", "postgresql+psycopg://", 1)
+
+    return cleaned
+
+
 class Settings(BaseSettings):
     model_config = SettingsConfigDict(env_file=".env", extra="ignore")
 
@@ -21,6 +33,10 @@ class Settings(BaseSettings):
     @property
     def allow_origins(self) -> List[str]:
         return [origin.strip() for origin in self.allow_origins_raw.split(",") if origin.strip()]
+
+    @property
+    def normalized_database_url(self) -> str:
+        return normalize_database_url(self.database_url)
 
 
 @lru_cache()

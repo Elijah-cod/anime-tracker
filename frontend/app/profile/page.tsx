@@ -3,21 +3,31 @@ import { redirect } from "next/navigation";
 
 import { ACCOUNT_COOKIE_NAME, decodeActiveUserEmail } from "@/lib/account-session";
 import { AccountPanel } from "@/components/account-panel";
+import { ActivityTimeline } from "@/components/activity-timeline";
 import { LibraryInsights } from "@/components/library-insights";
+import { ProfileOverview } from "@/components/profile-overview";
 import { ReviewsPanel } from "@/components/reviews-panel";
 import { SiteNav } from "@/components/site-nav";
-import { getCurrentUser, getEntries, getLibrarySummary, getReviews, getUsers } from "@/lib/api";
+import {
+  getCurrentUser,
+  getEntries,
+  getLibrarySummary,
+  getReviews,
+  getUserDashboard,
+  getUsers,
+} from "@/lib/api";
 
 export default async function ProfilePage() {
   const cookieStore = await cookies();
   const activeUserEmail = decodeActiveUserEmail(cookieStore.get(ACCOUNT_COOKIE_NAME)?.value);
 
-  const [currentUser, users, entries, reviews, summary] = await Promise.all([
+  const [currentUser, users, entries, reviews, summary, dashboard] = await Promise.all([
     getCurrentUser(activeUserEmail),
     getUsers(activeUserEmail),
     getEntries(activeUserEmail),
     getReviews(activeUserEmail),
     getLibrarySummary(activeUserEmail),
+    getUserDashboard(activeUserEmail),
   ]);
 
   if (!activeUserEmail || currentUser.email !== activeUserEmail) {
@@ -41,10 +51,14 @@ export default async function ProfilePage() {
         </p>
       </section>
 
+      <ProfileOverview currentUser={currentUser} dashboard={dashboard} />
+
       <section className="grid gap-8 xl:grid-cols-[0.9fr_1.1fr]">
         <AccountPanel currentUser={currentUser} users={users} />
         <LibraryInsights summary={summary} />
       </section>
+
+      <ActivityTimeline items={dashboard.recent_activity} />
 
       <ReviewsPanel entries={entries} initialReviews={reviews} activeUserEmail={activeUserEmail} />
     </main>

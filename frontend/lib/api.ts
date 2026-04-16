@@ -10,6 +10,8 @@ import {
   LibrarySummary,
   Review,
   ReviewCreatePayload,
+  UserActivityItem,
+  UserDashboard,
   User,
 } from "@/types/anime";
 
@@ -374,5 +376,61 @@ export async function createUserAccount(
       auth_provider: "local",
       created_at: new Date().toISOString(),
     };
+  }
+}
+
+function buildUserDashboardFallback(userEmail?: string): UserDashboard {
+  const now = new Date();
+  const scoredEntries = mockEntries
+    .map((entry) =>
+      typeof entry.score === "string" ? Number.parseFloat(entry.score) : entry.score,
+    )
+    .filter((score): score is number => score !== null && score !== undefined && !Number.isNaN(score));
+
+  const recentEntryActivity: UserActivityItem[] = mockEntries.slice(0, 4).map((entry, index) => ({
+    kind: "entry_updated",
+    anime_id: entry.anime_id,
+    anime_title: entry.title,
+    cover_image: entry.cover_image ?? null,
+    detail: `${entry.status} · ${entry.episodes_watched} episodes logged`,
+    occurred_at: new Date(now.getTime() - index * 1000 * 60 * 90).toISOString(),
+  }));
+
+  const recentReviewActivity: UserActivityItem[] = mockReviews.slice(0, 2).map((review, index) => ({
+    kind: "review_created",
+    anime_id: review.anime_id,
+    anime_title: review.anime_title ?? `Anime #${review.anime_id}`,
+    cover_image: review.cover_image ?? null,
+    detail: review.is_spoiler ? "Spoiler review" : "Review posted",
+    occurred_at: new Date(now.getTime() - index * 1000 * 60 * 60 * 7).toISOString(),
+  }));
+
+  return {
+    stats: {
+      tracked_entries: mockEntries.length,
+      reviews_written: mockReviews.length,
+      total_episodes_watched: mockEntries.reduce((sum, entry) => sum + entry.episodes_watched, 0),
+      average_score: scoredEntries.length
+        ? Number((scoredEntries.reduce((sum, score) => sum + score, 0) / scoredEntries.length).toFixed(2))
+        : null,
+      watching_entries: mockEntries.filter((entry) => entry.status === "WATCHING").length,
+      completed_entries: mockEntries.filter((entry) => entry.status === "COMPLETED").length,
+      account_age_days: 21,
+    },
+    recent_activity: [...recentEntryActivity, ...recentReviewActivity]
+      .sort((left, right) => {
+        const leftTime = new Date(left.occurred_at ?? 0).getTime();
+        const rightTime = new Date(right.occurred_at ?? 0).getTime();
+        return rightTime - leftTime;
+      })
+      .slice(0, 6),
+  };
+}
+
+export async function getUserDashboard(userEmail?: string): Promise<UserDashboard> {
+  try {
+    return await fetchJson<UserDashboard>("/users/me/dashboard", userEmail);
+  } catch {
+    return buildUserDashboardFallback(userEmail);
   }
 }

@@ -108,3 +108,27 @@ export type User = {
   auth_provider: string;
   created_at?: string | null;
 };
+
+export type UserProfileStats = {
+  tracked_entries: number;
+  reviews_written: number;
+  total_episodes_watched: number;
+  average_score?: number | null;
+  watching_entries: number;
+  completed_entries: number;
+  account_age_days: number;
+};
+
+export type UserActivityItem = {
+  kind: string;
+  anime_id: number;
+  anime_title: string;
+  cover_image?: string | null;
+  detail: string;
+  occurred_at?: string | null;
+};
+
+export type UserDashboard = {
+  stats: UserProfileStats;
+  recent_activity: UserActivityItem[];
+};

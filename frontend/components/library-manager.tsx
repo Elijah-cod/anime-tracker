@@ -18,6 +18,32 @@ type DraftState = Record<
   }
 >;
 
+function normalizeScore(score: AnimeEntry["score"] | string) {
+  if (score === null || score === undefined) {
+    return "";
+  }
+
+  const rawValue = String(score).trim();
+  if (!rawValue) {
+    return "";
+  }
+
+  const parsed = Number.parseFloat(rawValue);
+  return Number.isNaN(parsed) ? rawValue : parsed.toString();
+}
+
+function buildDrafts(entries: AnimeEntry[]): DraftState {
+  return Object.fromEntries(
+    entries.map((entry) => [
+      entry.anime_id,
+      {
+        status: entry.status,
+        score: entry.score === null || entry.score === undefined ? "" : String(entry.score),
+      },
+    ]),
+  );
+}
+
 function sortEntries(entries: AnimeEntry[]) {
   return [...entries].sort((left, right) => {
     const leftWatchingBias = left.status === "WATCHING" ? -1 : 0;
@@ -38,21 +64,16 @@ export function LibraryManager({
 }) {
   const [libraryEntries, setLibraryEntries] = useState(sortEntries(entries));
   const [filter, setFilter] = useState<StatusFilter>("ALL");
-  const [drafts, setDrafts] = useState<DraftState>(
-    Object.fromEntries(
-      entries.map((entry) => [
-        entry.anime_id,
-        {
-          status: entry.status,
-          score: entry.score === null || entry.score === undefined ? "" : String(entry.score),
-        },
-      ]),
-    ),
-  );
+  const [drafts, setDrafts] = useState<DraftState>(buildDrafts(entries));
   const [savingId, setSavingId] = useState<number | null>(null);
   const [deletingId, setDeletingId] = useState<number | null>(null);
   const [message, setMessage] = useState<string | null>(null);
   const [isPending, startTransition] = useTransition();
+
+  useEffect(() => {
+    setLibraryEntries(sortEntries(entries));
+    setDrafts(buildDrafts(entries));
+  }, [entries]);
 
   useEffect(() => {
     if (!message) {
@@ -95,6 +116,9 @@ export function LibraryManager({
 
   function handleSave(entry: AnimeEntry) {
     const draft = drafts[entry.anime_id];
+    if (!draft) {
+      return;
+    }
     setSavingId(entry.anime_id);
     setMessage(null);
 
@@ -206,6 +230,9 @@ export function LibraryManager({
             status: entry.status,
             score: entry.score === null || entry.score === undefined ? "" : String(entry.score),
           };
+          const isDirty =
+            draft.status !== entry.status ||
+            normalizeScore(draft.score) !== normalizeScore(entry.score);
           const isSaving = savingId === entry.anime_id && isPending;
           const isDeleting = deletingId === entry.anime_id && isPending;
 
@@ -266,13 +293,22 @@ export function LibraryManager({
                 <button
                   type="button"
                   onClick={() => handleSave(entry)}
-                  disabled={isSaving || isDeleting}
-                  className="inline-flex rounded-full bg-slate-950 px-5 py-3 text-sm font-semibold text-white transition hover:bg-slate-800 disabled:cursor-not-allowed disabled:opacity-70 dark:bg-emerald-500 dark:text-slate-950 dark:hover:bg-emerald-400"
+                  disabled={!isDirty || isSaving || isDeleting}
+                  className={`inline-flex rounded-full px-5 py-3 text-sm font-semibold transition disabled:cursor-not-allowed disabled:opacity-70 ${
+                    isDirty
+                      ? "bg-slate-950 text-white hover:bg-slate-800 dark:bg-emerald-500 dark:text-slate-950 dark:hover:bg-emerald-400"
+                      : "border border-slate-200 bg-slate-100 text-slate-500 dark:border-slate-800 dark:bg-slate-900 dark:text-slate-400"
+                  }`}
                 >
                   {isSaving ? (
                     <span className="inline-flex items-center gap-2">
                       <LoaderCircle className="h-4 w-4 animate-spin" />
                       Saving
+                    </span>
+                  ) : !isDirty ? (
+                    <span className="inline-flex items-center gap-2">
+                      <Check className="h-4 w-4" />
+                      Up to date
                     </span>
                   ) : (
                     <span className="inline-flex items-center gap-2">

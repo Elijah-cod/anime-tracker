@@ -6,6 +6,7 @@ import { User } from "@/types/anime";
 
 const NAV_ITEMS = [
   { href: "/", label: "Dashboard" },
+  { href: "/library", label: "Library" },
   { href: "/calendar", label: "Calendar" },
   { href: "/profile", label: "Profile" },
 ];

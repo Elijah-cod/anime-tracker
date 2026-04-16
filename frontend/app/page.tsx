@@ -4,6 +4,7 @@ import { ArrowUpRight, Sparkles, Workflow } from "lucide-react";
 import { AnimeLibrary } from "@/components/anime-library";
 import { CurrentProgress } from "@/components/current-progress";
 import { DiscoverPanel } from "@/components/discover-panel";
+import { LibraryManager } from "@/components/library-manager";
 import { MalImportPanel } from "@/components/mal-import-panel";
 import { ReleaseCalendar } from "@/components/release-calendar";
 import { ReviewsPanel } from "@/components/reviews-panel";
@@ -85,6 +86,8 @@ export default async function HomePage() {
       </section>
 
       <DiscoverPanel entries={entries} />
+
+      <LibraryManager entries={entries} />
 
       <AnimeLibrary items={trending} />
 

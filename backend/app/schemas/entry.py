@@ -35,5 +35,16 @@ class AnimeEntryUpdateProgress(BaseModel):
     score: Optional[Decimal] = None
 
 
+class AnimeEntryUpdate(BaseModel):
+    title: Optional[str] = None
+    cover_image: Optional[str] = None
+    status: Optional[str] = None
+    episodes_watched: Optional[int] = None
+    total_episodes: Optional[int] = None
+    score: Optional[Decimal] = None
+    started_at: Optional[datetime] = None
+    finished_at: Optional[datetime] = None
+
+
 class AnimeEntryListResponse(BaseModel):
     items: List[AnimeEntryRead]

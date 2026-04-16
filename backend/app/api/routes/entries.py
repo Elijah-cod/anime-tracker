@@ -9,6 +9,7 @@ from app.schemas.entry import (
     AnimeEntryCreate,
     AnimeEntryListResponse,
     AnimeEntryRead,
+    AnimeEntryUpdate,
     AnimeEntryUpdateProgress,
 )
 
@@ -60,6 +61,30 @@ async def create_entry(payload: AnimeEntryCreate, db: Session = Depends(get_db))
 
     entry = AnimeEntry(user_id=user.id, **payload.model_dump(exclude={"user_id"}))
     db.add(entry)
+    db.commit()
+    db.refresh(entry)
+    return serialize_entry(entry)
+
+
+@router.patch("/{anime_id}", response_model=AnimeEntryRead)
+async def update_entry(
+    anime_id: int,
+    payload: AnimeEntryUpdate,
+    db: Session = Depends(get_db),
+) -> AnimeEntryRead:
+    user = get_or_create_demo_user(db)
+    entry = db.scalar(
+        select(AnimeEntry).where(
+            AnimeEntry.user_id == user.id,
+            AnimeEntry.anime_id == anime_id,
+        )
+    )
+    if not entry:
+        raise HTTPException(status_code=404, detail="Anime entry not found")
+
+    for field, value in payload.model_dump(exclude_unset=True).items():
+        setattr(entry, field, value)
+
     db.commit()
     db.refresh(entry)
     return serialize_entry(entry)

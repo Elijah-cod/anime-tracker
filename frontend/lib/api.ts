@@ -3,6 +3,7 @@ import {
   AnimeCalendarItem,
   AnimeEntry,
   AnimeEntryCreatePayload,
+  AnimeEntryUpdatePayload,
   AnimeNode,
   ImportResponse,
   Review,
@@ -135,6 +136,37 @@ export async function createEntry(payload: AnimeEntryCreatePayload): Promise<Ani
       title: payload.title,
       cover_image: payload.cover_image ?? null,
       status: payload.status,
+      episodes_watched: payload.episodes_watched ?? 0,
+      total_episodes: payload.total_episodes ?? null,
+      score: payload.score ?? null,
+    });
+  }
+}
+
+export async function updateEntry(
+  animeId: number,
+  payload: AnimeEntryUpdatePayload,
+): Promise<AnimeEntry> {
+  try {
+    const response = await fetch(`${API_URL}/entries/${animeId}`, {
+      method: "PATCH",
+      headers: {
+        "Content-Type": "application/json",
+      },
+      body: JSON.stringify(payload),
+    });
+
+    if (!response.ok) {
+      throw new Error("Update entry request failed");
+    }
+
+    return normalizeEntry(await response.json());
+  } catch {
+    return normalizeEntry({
+      anime_id: animeId,
+      title: payload.title ?? "Untitled anime",
+      cover_image: payload.cover_image ?? null,
+      status: payload.status ?? "PLANNING",
       episodes_watched: payload.episodes_watched ?? 0,
       total_episodes: payload.total_episodes ?? null,
       score: payload.score ?? null,

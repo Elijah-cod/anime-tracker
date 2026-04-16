@@ -2,6 +2,7 @@ import Image from "next/image";
 import Link from "next/link";
 
 import { SignOutButton } from "@/components/sign-out-button";
+import { getPublicUserMeta } from "@/lib/user-privacy";
 import { User } from "@/types/anime";
 
 const NAV_ITEMS = [
@@ -18,6 +19,8 @@ export function SiteNav({
   currentPath: string;
   currentUser: User;
 }) {
+  const publicMeta = getPublicUserMeta(currentUser);
+
   return (
     <header className="rounded-[2rem] border border-white/60 bg-white/70 px-4 py-4 shadow-card backdrop-blur dark:border-white/10 dark:bg-slate-950/70 sm:px-5">
       <div className="flex flex-col gap-4 xl:flex-row xl:items-center xl:justify-between">
@@ -62,8 +65,12 @@ export function SiteNav({
         <div className="flex items-center justify-between gap-3 sm:justify-start xl:justify-end">
           <div className="min-w-0 rounded-full border border-slate-200 bg-slate-50 px-4 py-2 text-sm text-slate-600 dark:border-slate-800 dark:bg-slate-900 dark:text-slate-300">
             <span className="font-semibold text-slate-950 dark:text-slate-50">{currentUser.username}</span>
-            <span className="mx-2 hidden text-slate-400 sm:inline">•</span>
-            <span className="hidden sm:inline">{currentUser.email}</span>
+            {publicMeta ? (
+              <>
+                <span className="mx-2 hidden text-slate-400 sm:inline">•</span>
+                <span className="hidden sm:inline">{publicMeta}</span>
+              </>
+            ) : null}
           </div>
           <SignOutButton />
         </div>

@@ -6,6 +6,7 @@ import { FormEvent, useState, useTransition } from "react";
 
 import { setActiveUserEmail } from "@/lib/account-session";
 import { createUserAccount } from "@/lib/api";
+import { getPrivateUserHint, getPublicUserMeta } from "@/lib/user-privacy";
 import { User } from "@/types/anime";
 
 export function AuthPanel({ users }: { users: User[] }) {
@@ -77,24 +78,34 @@ export function AuthPanel({ users }: { users: User[] }) {
         </div>
 
         <div className="mt-6 space-y-3">
-          {users.map((user) => (
-            <button
-              key={user.id}
-              type="button"
-              onClick={() => continueAs(user.email)}
-              disabled={isPending}
-              className="flex w-full items-center justify-between rounded-3xl border border-slate-200 bg-slate-50/80 px-4 py-4 text-left transition hover:bg-slate-100 disabled:cursor-not-allowed disabled:opacity-70 dark:border-slate-800 dark:bg-slate-900/80 dark:hover:bg-slate-800"
-            >
-              <div>
-                <p className="font-semibold text-slate-950 dark:text-slate-50">{user.username}</p>
-                <p className="mt-1 text-sm text-slate-500 dark:text-slate-400">{user.email}</p>
-              </div>
-              <span className="inline-flex items-center gap-2 rounded-full bg-slate-950 px-3 py-1 text-xs font-semibold uppercase tracking-[0.18em] text-white dark:bg-white dark:text-slate-950">
-                Continue
-                <ArrowRight className="h-3.5 w-3.5" />
-              </span>
-            </button>
-          ))}
+          {users.map((user) => {
+            const publicMeta = getPublicUserMeta(user);
+
+            return (
+              <button
+                key={user.id}
+                type="button"
+                onClick={() => continueAs(user.email)}
+                disabled={isPending}
+                className="flex w-full items-center justify-between rounded-3xl border border-slate-200 bg-slate-50/80 px-4 py-4 text-left transition hover:bg-slate-100 disabled:cursor-not-allowed disabled:opacity-70 dark:border-slate-800 dark:bg-slate-900/80 dark:hover:bg-slate-800"
+              >
+                <div>
+                  <p className="font-semibold text-slate-950 dark:text-slate-50">{user.username}</p>
+                  {publicMeta ? (
+                    <p className="mt-1 text-sm text-slate-500 dark:text-slate-400">{publicMeta}</p>
+                  ) : (
+                    <p className="mt-1 text-sm text-slate-500 dark:text-slate-400">
+                      {getPrivateUserHint(user)}
+                    </p>
+                  )}
+                </div>
+                <span className="inline-flex items-center gap-2 rounded-full bg-slate-950 px-3 py-1 text-xs font-semibold uppercase tracking-[0.18em] text-white dark:bg-white dark:text-slate-950">
+                  Continue
+                  <ArrowRight className="h-3.5 w-3.5" />
+                </span>
+              </button>
+            );
+          })}
         </div>
       </div>
 

@@ -3,9 +3,11 @@ import {
   AnimeCalendarItem,
   AnimeEntry,
   AnimeEntryCreatePayload,
+  AnimeEntryStatusCount,
   AnimeEntryUpdatePayload,
   AnimeNode,
   ImportResponse,
+  LibrarySummary,
   Review,
   ReviewCreatePayload,
 } from "@/types/anime";
@@ -79,6 +81,48 @@ export async function getEntries(): Promise<AnimeEntry[]> {
     return response.items.map(normalizeEntry);
   } catch {
     return mockEntries;
+  }
+}
+
+function buildSummary(entries: AnimeEntry[]): LibrarySummary {
+  const statusCounts = entries.reduce<Record<string, number>>((counts, entry) => {
+    counts[entry.status] = (counts[entry.status] ?? 0) + 1;
+    return counts;
+  }, {});
+
+  const status_breakdown: AnimeEntryStatusCount[] = Object.entries(statusCounts)
+    .sort(([left], [right]) => left.localeCompare(right))
+    .map(([status, count]) => ({ status, count }));
+
+  const scoredEntries = entries
+    .map((entry) =>
+      typeof entry.score === "string" ? Number.parseFloat(entry.score) : entry.score,
+    )
+    .filter((score): score is number => score !== null && score !== undefined && !Number.isNaN(score));
+
+  return {
+    total_entries: entries.length,
+    total_episodes_watched: entries.reduce((sum, entry) => sum + entry.episodes_watched, 0),
+    average_score: scoredEntries.length
+      ? Number((scoredEntries.reduce((sum, score) => sum + score, 0) / scoredEntries.length).toFixed(2))
+      : null,
+    completed_entries: entries.filter((entry) => entry.status === "COMPLETED").length,
+    watching_entries: entries.filter((entry) => entry.status === "WATCHING").length,
+    planning_entries: entries.filter((entry) => entry.status === "PLANNING").length,
+    status_breakdown,
+    watch_queue: entries.filter((entry) => ["WATCHING", "PLANNING"].includes(entry.status)).slice(0, 4),
+  };
+}
+
+export async function getLibrarySummary(): Promise<LibrarySummary> {
+  try {
+    const response = await fetchJson<LibrarySummary>("/entries/summary");
+    return {
+      ...response,
+      watch_queue: response.watch_queue.map(normalizeEntry),
+    };
+  } catch {
+    return buildSummary(mockEntries);
   }
 }
 

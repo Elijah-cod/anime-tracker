@@ -48,3 +48,19 @@ class AnimeEntryUpdate(BaseModel):
 
 class AnimeEntryListResponse(BaseModel):
     items: List[AnimeEntryRead]
+
+
+class AnimeEntryStatusCount(BaseModel):
+    status: str
+    count: int
+
+
+class LibrarySummaryResponse(BaseModel):
+    total_entries: int
+    total_episodes_watched: int
+    average_score: Optional[float] = None
+    completed_entries: int
+    watching_entries: int
+    planning_entries: int
+    status_breakdown: List[AnimeEntryStatusCount]
+    watch_queue: List[AnimeEntryRead]

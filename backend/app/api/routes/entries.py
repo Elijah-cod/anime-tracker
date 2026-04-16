@@ -9,8 +9,10 @@ from app.schemas.entry import (
     AnimeEntryCreate,
     AnimeEntryListResponse,
     AnimeEntryRead,
+    AnimeEntryStatusCount,
     AnimeEntryUpdate,
     AnimeEntryUpdateProgress,
+    LibrarySummaryResponse,
 )
 
 router = APIRouter()
@@ -40,6 +42,53 @@ async def list_entries(db: Session = Depends(get_db)) -> AnimeEntryListResponse:
     ).all()
     db.commit()
     return AnimeEntryListResponse(items=[serialize_entry(entry) for entry in entries])
+
+
+@router.get("/summary", response_model=LibrarySummaryResponse)
+async def get_library_summary(db: Session = Depends(get_db)) -> LibrarySummaryResponse:
+    user = get_or_create_demo_user(db)
+    entries = db.scalars(
+        select(AnimeEntry)
+        .where(AnimeEntry.user_id == user.id)
+        .order_by(AnimeEntry.updated_at.desc(), AnimeEntry.id.desc())
+    ).all()
+    db.commit()
+
+    total_entries = len(entries)
+    total_episodes_watched = sum(entry.episodes_watched for entry in entries)
+    scored_entries = [float(entry.score) for entry in entries if entry.score is not None]
+    average_score = (
+        round(sum(scored_entries) / len(scored_entries), 2) if scored_entries else None
+    )
+    completed_entries = sum(1 for entry in entries if entry.status == "COMPLETED")
+    watching_entries = sum(1 for entry in entries if entry.status == "WATCHING")
+    planning_entries = sum(1 for entry in entries if entry.status == "PLANNING")
+
+    status_counts: dict[str, int] = {}
+    for entry in entries:
+        status_counts[entry.status] = status_counts.get(entry.status, 0) + 1
+
+    status_breakdown = [
+        AnimeEntryStatusCount(status=status, count=count)
+        for status, count in sorted(status_counts.items())
+    ]
+
+    watch_queue = [
+        serialize_entry(entry)
+        for entry in entries
+        if entry.status in {"WATCHING", "PLANNING"}
+    ][:4]
+
+    return LibrarySummaryResponse(
+        total_entries=total_entries,
+        total_episodes_watched=total_episodes_watched,
+        average_score=average_score,
+        completed_entries=completed_entries,
+        watching_entries=watching_entries,
+        planning_entries=planning_entries,
+        status_breakdown=status_breakdown,
+        watch_queue=watch_queue,
+    )
 
 
 @router.post("", response_model=AnimeEntryRead, status_code=201)

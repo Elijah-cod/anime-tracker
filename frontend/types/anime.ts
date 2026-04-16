@@ -84,3 +84,19 @@ export type ImportResponse = {
   imported_count: number;
   items: ImportedEntry[];
 };
+
+export type AnimeEntryStatusCount = {
+  status: string;
+  count: number;
+};
+
+export type LibrarySummary = {
+  total_entries: number;
+  total_episodes_watched: number;
+  average_score?: number | null;
+  completed_entries: number;
+  watching_entries: number;
+  planning_entries: number;
+  status_breakdown: AnimeEntryStatusCount[];
+  watch_queue: AnimeEntry[];
+};

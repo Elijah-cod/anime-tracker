@@ -4,19 +4,21 @@ import { ArrowUpRight, Sparkles, Workflow } from "lucide-react";
 import { AnimeLibrary } from "@/components/anime-library";
 import { CurrentProgress } from "@/components/current-progress";
 import { DiscoverPanel } from "@/components/discover-panel";
+import { LibraryInsights } from "@/components/library-insights";
 import { LibraryManager } from "@/components/library-manager";
 import { MalImportPanel } from "@/components/mal-import-panel";
 import { ReleaseCalendar } from "@/components/release-calendar";
 import { ReviewsPanel } from "@/components/reviews-panel";
 import { ThemeToggle } from "@/components/theme-toggle";
-import { getEntries, getReleaseCalendar, getReviews, getTrendingAnime } from "@/lib/api";
+import { getEntries, getLibrarySummary, getReleaseCalendar, getReviews, getTrendingAnime } from "@/lib/api";
 
 export default async function HomePage() {
-  const [trending, calendar, entries, reviews] = await Promise.all([
+  const [trending, calendar, entries, reviews, summary] = await Promise.all([
     getTrendingAnime(),
     getReleaseCalendar(),
     getEntries(),
     getReviews(),
+    getLibrarySummary(),
   ]);
 
   return (
@@ -86,6 +88,8 @@ export default async function HomePage() {
       </section>
 
       <DiscoverPanel entries={entries} />
+
+      <LibraryInsights summary={summary} />
 
       <LibraryManager entries={entries} />
 

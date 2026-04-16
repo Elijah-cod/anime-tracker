@@ -3,8 +3,8 @@ from typing import Dict, List
 from sqlalchemy import select
 from sqlalchemy.orm import Session
 
-from app.db.bootstrap import get_or_create_demo_user
 from app.models.anime_entry import AnimeEntry
+from app.models.user import User
 from app.schemas.import_job import ImportResponse, ImportedEntry
 from app.services.jikan import JikanService
 
@@ -24,7 +24,9 @@ class ImportSyncService:
 
     async def import_mal_list(self, username: str, user_id: int, db: Session) -> ImportResponse:
         data = await self.jikan_service.fetch_user_anime_list(username=username)
-        user = get_or_create_demo_user(db)
+        user = db.scalar(select(User).where(User.id == user_id))
+        if user is None:
+            raise ValueError("User not found for import")
         items: List[ImportedEntry] = []
 
         for item in data[:25]:

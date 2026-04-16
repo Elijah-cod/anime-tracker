@@ -2,10 +2,11 @@ from fastapi import APIRouter, Depends
 from sqlalchemy import select
 from sqlalchemy.orm import Session
 
-from app.db.bootstrap import get_or_create_demo_user
+from app.api.deps import get_current_user
 from app.db.session import get_db
 from app.models.anime_entry import AnimeEntry
 from app.models.review import Review
+from app.models.user import User
 from app.schemas.review import ReviewCreate, ReviewListResponse, ReviewRead
 
 router = APIRouter()
@@ -24,12 +25,16 @@ def serialize_review(review: Review, related_entry: AnimeEntry | None = None) ->
 
 
 @router.get("", response_model=ReviewListResponse)
-async def list_reviews(db: Session = Depends(get_db)) -> ReviewListResponse:
-    user = get_or_create_demo_user(db)
+async def list_reviews(
+    db: Session = Depends(get_db),
+    current_user: User = Depends(get_current_user),
+) -> ReviewListResponse:
     reviews = db.scalars(
-        select(Review).where(Review.user_id == user.id).order_by(Review.created_at.desc(), Review.id.desc())
+        select(Review)
+        .where(Review.user_id == current_user.id)
+        .order_by(Review.created_at.desc(), Review.id.desc())
     ).all()
-    entries = db.scalars(select(AnimeEntry).where(AnimeEntry.user_id == user.id)).all()
+    entries = db.scalars(select(AnimeEntry).where(AnimeEntry.user_id == current_user.id)).all()
     entry_map = {entry.anime_id: entry for entry in entries}
     db.commit()
     return ReviewListResponse(
@@ -38,10 +43,13 @@ async def list_reviews(db: Session = Depends(get_db)) -> ReviewListResponse:
 
 
 @router.post("", response_model=ReviewRead, status_code=201)
-async def create_review(payload: ReviewCreate, db: Session = Depends(get_db)) -> ReviewRead:
-    user = get_or_create_demo_user(db)
+async def create_review(
+    payload: ReviewCreate,
+    db: Session = Depends(get_db),
+    current_user: User = Depends(get_current_user),
+) -> ReviewRead:
     review = Review(
-        user_id=user.id,
+        user_id=current_user.id,
         anime_id=payload.anime_id,
         content=payload.content,
         is_spoiler=payload.is_spoiler,
@@ -51,7 +59,7 @@ async def create_review(payload: ReviewCreate, db: Session = Depends(get_db)) ->
     db.refresh(review)
     related_entry = db.scalar(
         select(AnimeEntry).where(
-            AnimeEntry.user_id == user.id,
+            AnimeEntry.user_id == current_user.id,
             AnimeEntry.anime_id == payload.anime_id,
         )
     )

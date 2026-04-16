@@ -2,9 +2,10 @@ from fastapi import APIRouter, Depends, HTTPException
 from sqlalchemy import select
 from sqlalchemy.orm import Session
 
-from app.db.bootstrap import get_or_create_demo_user
+from app.api.deps import get_current_user
 from app.db.session import get_db
 from app.models.anime_entry import AnimeEntry
+from app.models.user import User
 from app.schemas.entry import (
     AnimeEntryCreate,
     AnimeEntryListResponse,
@@ -33,11 +34,13 @@ def serialize_entry(entry: AnimeEntry) -> AnimeEntryRead:
 
 
 @router.get("", response_model=AnimeEntryListResponse)
-async def list_entries(db: Session = Depends(get_db)) -> AnimeEntryListResponse:
-    user = get_or_create_demo_user(db)
+async def list_entries(
+    db: Session = Depends(get_db),
+    current_user: User = Depends(get_current_user),
+) -> AnimeEntryListResponse:
     entries = db.scalars(
         select(AnimeEntry)
-        .where(AnimeEntry.user_id == user.id)
+        .where(AnimeEntry.user_id == current_user.id)
         .order_by(AnimeEntry.updated_at.desc(), AnimeEntry.id.desc())
     ).all()
     db.commit()
@@ -45,11 +48,13 @@ async def list_entries(db: Session = Depends(get_db)) -> AnimeEntryListResponse:
 
 
 @router.get("/summary", response_model=LibrarySummaryResponse)
-async def get_library_summary(db: Session = Depends(get_db)) -> LibrarySummaryResponse:
-    user = get_or_create_demo_user(db)
+async def get_library_summary(
+    db: Session = Depends(get_db),
+    current_user: User = Depends(get_current_user),
+) -> LibrarySummaryResponse:
     entries = db.scalars(
         select(AnimeEntry)
-        .where(AnimeEntry.user_id == user.id)
+        .where(AnimeEntry.user_id == current_user.id)
         .order_by(AnimeEntry.updated_at.desc(), AnimeEntry.id.desc())
     ).all()
     db.commit()
@@ -92,11 +97,14 @@ async def get_library_summary(db: Session = Depends(get_db)) -> LibrarySummaryRe
 
 
 @router.post("", response_model=AnimeEntryRead, status_code=201)
-async def create_entry(payload: AnimeEntryCreate, db: Session = Depends(get_db)) -> AnimeEntryRead:
-    user = get_or_create_demo_user(db)
+async def create_entry(
+    payload: AnimeEntryCreate,
+    db: Session = Depends(get_db),
+    current_user: User = Depends(get_current_user),
+) -> AnimeEntryRead:
     existing_entry = db.scalar(
         select(AnimeEntry).where(
-            AnimeEntry.user_id == user.id,
+            AnimeEntry.user_id == current_user.id,
             AnimeEntry.anime_id == payload.anime_id,
         )
     )
@@ -108,7 +116,7 @@ async def create_entry(payload: AnimeEntryCreate, db: Session = Depends(get_db))
         db.refresh(existing_entry)
         return serialize_entry(existing_entry)
 
-    entry = AnimeEntry(user_id=user.id, **payload.model_dump(exclude={"user_id"}))
+    entry = AnimeEntry(user_id=current_user.id, **payload.model_dump(exclude={"user_id"}))
     db.add(entry)
     db.commit()
     db.refresh(entry)
@@ -120,11 +128,11 @@ async def update_entry(
     anime_id: int,
     payload: AnimeEntryUpdate,
     db: Session = Depends(get_db),
+    current_user: User = Depends(get_current_user),
 ) -> AnimeEntryRead:
-    user = get_or_create_demo_user(db)
     entry = db.scalar(
         select(AnimeEntry).where(
-            AnimeEntry.user_id == user.id,
+            AnimeEntry.user_id == current_user.id,
             AnimeEntry.anime_id == anime_id,
         )
     )
@@ -144,11 +152,11 @@ async def update_entry_progress(
     anime_id: int,
     payload: AnimeEntryUpdateProgress,
     db: Session = Depends(get_db),
+    current_user: User = Depends(get_current_user),
 ) -> AnimeEntryRead:
-    user = get_or_create_demo_user(db)
     entry = db.scalar(
         select(AnimeEntry).where(
-            AnimeEntry.user_id == user.id,
+            AnimeEntry.user_id == current_user.id,
             AnimeEntry.anime_id == anime_id,
         )
     )
@@ -168,11 +176,14 @@ async def update_entry_progress(
 
 
 @router.delete("/{anime_id}", status_code=204)
-async def delete_entry(anime_id: int, db: Session = Depends(get_db)) -> None:
-    user = get_or_create_demo_user(db)
+async def delete_entry(
+    anime_id: int,
+    db: Session = Depends(get_db),
+    current_user: User = Depends(get_current_user),
+) -> None:
     entry = db.scalar(
         select(AnimeEntry).where(
-            AnimeEntry.user_id == user.id,
+            AnimeEntry.user_id == current_user.id,
             AnimeEntry.anime_id == anime_id,
         )
     )

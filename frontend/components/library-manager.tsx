@@ -1,7 +1,7 @@
 "use client";
 
 import { Check, Filter, LoaderCircle, Star, Trash2 } from "lucide-react";
-import { useMemo, useState, useTransition } from "react";
+import { useEffect, useMemo, useState, useTransition } from "react";
 
 import { SafeImage } from "@/components/safe-image";
 import { deleteEntry, updateEntry } from "@/lib/api";
@@ -54,6 +54,18 @@ export function LibraryManager({
   const [message, setMessage] = useState<string | null>(null);
   const [isPending, startTransition] = useTransition();
 
+  useEffect(() => {
+    if (!message) {
+      return undefined;
+    }
+
+    const timeoutId = window.setTimeout(() => {
+      setMessage(null);
+    }, 2800);
+
+    return () => window.clearTimeout(timeoutId);
+  }, [message]);
+
   const filteredEntries = useMemo(() => {
     if (filter === "ALL") {
       return libraryEntries;
@@ -71,6 +83,7 @@ export function LibraryManager({
   );
 
   function updateDraft(animeId: number, patch: Partial<DraftState[number]>) {
+    setMessage(null);
     setDrafts((current) => ({
       ...current,
       [animeId]: {
@@ -182,7 +195,9 @@ export function LibraryManager({
       </div>
 
       {message ? (
-        <p className="mt-4 text-sm text-slate-600 dark:text-slate-300">{message}</p>
+        <p className="mt-4 text-sm text-slate-600 transition-opacity dark:text-slate-300">
+          {message}
+        </p>
       ) : null}
 
       <div className="mt-6 grid gap-4">

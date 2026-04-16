@@ -410,9 +410,10 @@ This repository includes a backend blueprint at [render.yaml](/Users/elijah/Docu
 Backend service settings:
 
 - Root directory: `backend`
-- Build command: `pip install -e .`
+- Build command: `python -m pip install -e .`
 - Start command: `uvicorn app.main:app --host 0.0.0.0 --port $PORT`
 - Health check path: `/api/v1/health`
+- Python version: `3.11.11` via repo-level `.python-version`
 
 Required environment variables:
 

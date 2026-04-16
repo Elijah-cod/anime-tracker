@@ -1,3 +1,4 @@
+import Link from "next/link";
 import { BarChart3, CheckCircle2, Clock3, PlayCircle, Star } from "lucide-react";
 
 import { SafeImage } from "@/components/safe-image";
@@ -146,9 +147,19 @@ export function LibraryInsights({ summary }: { summary: LibrarySummary }) {
           </div>
 
           {!summary.watch_queue.length ? (
-            <p className="mt-4 text-sm text-slate-500 dark:text-slate-400">
-              Add a few planning or watching titles to build your queue.
-            </p>
+            <div className="mt-4 space-y-2 text-sm text-slate-500 dark:text-slate-400">
+              <p>Add a few planning or watching titles to build your queue.</p>
+              <p>
+                Use <span className="font-semibold">Discover → Add to queue</span> for{" "}
+                <span className="font-semibold">PLANNING</span> titles or{" "}
+                <span className="font-semibold">Discover → Start watching</span> for anime you want
+                in the tracker snapshot right away. You can also update statuses from{" "}
+                <Link href="/library" className="underline underline-offset-4">
+                  Library
+                </Link>
+                .
+              </p>
+            </div>
           ) : null}
         </article>
       </div>

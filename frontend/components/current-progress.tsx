@@ -1,5 +1,6 @@
 "use client";
 
+import Link from "next/link";
 import { startTransition, useOptimistic, useState } from "react";
 
 import { SafeImage } from "@/components/safe-image";
@@ -46,6 +47,7 @@ export function CurrentProgress({
           : entry,
       ),
   );
+  const watchEntries = optimisticEntries.filter((entry) => entry.status === "WATCHING");
 
   async function handleAdvance(entry: AnimeEntry) {
     setError(null);
@@ -80,7 +82,7 @@ export function CurrentProgress({
       </div>
 
       <div className="mt-6 grid gap-4">
-        {optimisticEntries.map((entry) => (
+        {watchEntries.map((entry) => (
           <article
             key={entry.anime_id}
             className="grid gap-4 rounded-3xl border border-slate-200/70 bg-slate-50/80 p-4 dark:border-slate-800 dark:bg-slate-900/80 md:grid-cols-[96px_1fr_auto]"
@@ -139,6 +141,22 @@ export function CurrentProgress({
           </article>
         ))}
       </div>
+
+      {!watchEntries.length ? (
+        <div className="mt-6 rounded-3xl border border-dashed border-slate-300 bg-slate-50/70 p-5 text-sm text-slate-600 dark:border-slate-700 dark:bg-slate-900/70 dark:text-slate-300">
+          <p className="font-semibold text-slate-950 dark:text-slate-50">
+            No anime is in one-click tracking yet.
+          </p>
+          <p className="mt-2">
+            Use <span className="font-semibold">Discover → Start watching</span> to place an anime
+            here, or change a tracked title to <span className="font-semibold">WATCHING</span> from{" "}
+            <Link href="/library" className="underline underline-offset-4">
+              Library
+            </Link>
+            .
+          </p>
+        </div>
+      ) : null}
 
       {error ? (
         <p className="mt-4 text-sm text-rose-600 dark:text-rose-300">{error}</p>

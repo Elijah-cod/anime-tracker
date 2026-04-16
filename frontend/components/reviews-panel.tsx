@@ -1,5 +1,6 @@
 "use client";
 
+import Link from "next/link";
 import { MessageSquareQuote } from "lucide-react";
 import { FormEvent, useOptimistic, useState, useTransition } from "react";
 
@@ -21,6 +22,14 @@ function formatReviewDate(createdAt?: string | null) {
     month: "short",
     day: "numeric",
   });
+}
+
+function buildCommentPlaceholder(title?: string) {
+  if (!title) {
+    return "What stood out in the last episode?";
+  }
+
+  return `What do you want to say about ${title}?`;
 }
 
 export function ReviewsPanel({
@@ -45,13 +54,14 @@ export function ReviewsPanel({
   const [isPending, startTransition] = useTransition();
 
   const selectedEntry = entries.find((entry) => entry.anime_id === selectedAnimeId) ?? entries[0];
+  const hasEntries = entries.length > 0;
 
   function handleSubmit(event: FormEvent<HTMLFormElement>) {
     event.preventDefault();
     setError(null);
 
     if (!selectedEntry) {
-      setError("Pick an anime before posting a review.");
+      setError("Pick an anime before posting a comment.");
       return;
     }
 
@@ -87,7 +97,7 @@ export function ReviewsPanel({
         setContent("");
         setIsSpoiler(false);
       } catch {
-        setError("Could not publish the review right now.");
+        setError("Could not publish the comment right now.");
       }
     });
   }
@@ -97,10 +107,10 @@ export function ReviewsPanel({
       <div className="flex items-start justify-between gap-4">
         <div>
           <p className="text-xs uppercase tracking-[0.3em] text-slate-500 dark:text-slate-400">
-            Reviews
+            Comments
           </p>
           <h2 className="mt-2 text-2xl font-semibold text-slate-950 dark:text-slate-50">
-            Log quick thoughts as you watch
+            Add a comment for a specific anime
           </h2>
         </div>
         <div className="rounded-full border border-fuchsia-300/70 bg-fuchsia-100/70 p-3 text-fuchsia-700 dark:border-fuchsia-500/30 dark:bg-fuchsia-500/10 dark:text-fuchsia-200">
@@ -108,45 +118,81 @@ export function ReviewsPanel({
         </div>
       </div>
 
-      <form onSubmit={handleSubmit} className="mt-6 space-y-4 rounded-3xl border border-slate-200/70 bg-slate-50/80 p-4 dark:border-slate-800 dark:bg-slate-900/80">
-        <select
-          value={selectedAnimeId}
-          onChange={(event) => setSelectedAnimeId(Number.parseInt(event.target.value, 10))}
-          className="w-full rounded-2xl border border-slate-200 bg-white px-4 py-3 text-sm text-slate-900 outline-none transition focus:border-slate-400 dark:border-slate-700 dark:bg-slate-950 dark:text-slate-50 dark:focus:border-slate-500"
-        >
-          {entries.map((entry) => (
-            <option key={entry.anime_id} value={entry.anime_id}>
-              {entry.title}
-            </option>
-          ))}
-        </select>
+      {hasEntries ? (
+        <form onSubmit={handleSubmit} className="mt-6 space-y-4 rounded-3xl border border-slate-200/70 bg-slate-50/80 p-4 dark:border-slate-800 dark:bg-slate-900/80">
+          <label className="block space-y-2">
+            <span className="text-sm font-medium text-slate-600 dark:text-slate-300">
+              Choose the anime you want to comment on
+            </span>
+            <select
+              value={selectedAnimeId}
+              onChange={(event) => setSelectedAnimeId(Number.parseInt(event.target.value, 10))}
+              className="w-full rounded-2xl border border-slate-200 bg-white px-4 py-3 text-sm text-slate-900 outline-none transition focus:border-slate-400 dark:border-slate-700 dark:bg-slate-950 dark:text-slate-50 dark:focus:border-slate-500"
+            >
+              {entries.map((entry) => (
+                <option key={entry.anime_id} value={entry.anime_id}>
+                  {entry.title}
+                </option>
+              ))}
+            </select>
+          </label>
 
-        <textarea
-          value={content}
-          onChange={(event) => setContent(event.target.value)}
-          rows={4}
-          placeholder="What stood out in the last episode?"
-          className="w-full rounded-3xl border border-slate-200 bg-white px-4 py-3 text-sm text-slate-900 outline-none transition focus:border-slate-400 dark:border-slate-700 dark:bg-slate-950 dark:text-slate-50 dark:focus:border-slate-500"
-        />
+          {selectedEntry ? (
+            <div className="rounded-3xl border border-slate-200 bg-white/80 p-4 dark:border-slate-800 dark:bg-slate-950/80">
+              <p className="text-sm font-semibold text-slate-950 dark:text-slate-50">
+                Commenting on: {selectedEntry.title}
+              </p>
+              <p className="mt-1 text-sm text-slate-500 dark:text-slate-400">
+                Your comment will be attached to this anime specifically.
+              </p>
+            </div>
+          ) : null}
 
-        <label className="flex items-center gap-3 text-sm text-slate-600 dark:text-slate-300">
-          <input
-            type="checkbox"
-            checked={isSpoiler}
-            onChange={(event) => setIsSpoiler(event.target.checked)}
-            className="h-4 w-4 rounded border-slate-300 text-slate-950 focus:ring-slate-400 dark:border-slate-700 dark:bg-slate-900 dark:text-sky-400"
+          <textarea
+            value={content}
+            onChange={(event) => setContent(event.target.value)}
+            rows={4}
+            placeholder={buildCommentPlaceholder(selectedEntry?.title)}
+            className="w-full rounded-3xl border border-slate-200 bg-white px-4 py-3 text-sm text-slate-900 outline-none transition focus:border-slate-400 dark:border-slate-700 dark:bg-slate-950 dark:text-slate-50 dark:focus:border-slate-500"
           />
-          Mark as spoiler
-        </label>
 
-        <button
-          type="submit"
-          disabled={isPending}
-          className="rounded-full bg-slate-950 px-5 py-3 text-sm font-semibold text-white transition hover:bg-slate-800 disabled:cursor-not-allowed disabled:opacity-70 dark:bg-fuchsia-500 dark:text-slate-950 dark:hover:bg-fuchsia-400"
-        >
-          Post review
-        </button>
-      </form>
+          <label className="flex items-center gap-3 text-sm text-slate-600 dark:text-slate-300">
+            <input
+              type="checkbox"
+              checked={isSpoiler}
+              onChange={(event) => setIsSpoiler(event.target.checked)}
+              className="h-4 w-4 rounded border-slate-300 text-slate-950 focus:ring-slate-400 dark:border-slate-700 dark:bg-slate-900 dark:text-sky-400"
+            />
+            Mark as spoiler
+          </label>
+
+          <button
+            type="submit"
+            disabled={isPending}
+            className="rounded-full bg-slate-950 px-5 py-3 text-sm font-semibold text-white transition hover:bg-slate-800 disabled:cursor-not-allowed disabled:opacity-70 dark:bg-fuchsia-500 dark:text-slate-950 dark:hover:bg-fuchsia-400"
+          >
+            Post comment
+          </button>
+        </form>
+      ) : (
+        <div className="mt-6 rounded-3xl border border-dashed border-slate-300 bg-slate-50/70 p-5 text-sm text-slate-600 dark:border-slate-700 dark:bg-slate-900/70 dark:text-slate-300">
+          <p className="font-semibold text-slate-950 dark:text-slate-50">
+            Track an anime before posting a comment.
+          </p>
+          <p className="mt-2">
+            Search for a title on the dashboard and use <span className="font-semibold">Start watching</span>{" "}
+            or <span className="font-semibold">Add to queue</span>. Once it is tracked, it will show
+            up here so you can attach a comment to that specific anime.
+          </p>
+          <p className="mt-2">
+            You can also manage statuses from{" "}
+            <Link href="/library" className="underline underline-offset-4">
+              Library
+            </Link>
+            .
+          </p>
+        </div>
+      )}
 
       {error ? (
         <p className="mt-4 text-sm text-rose-600 dark:text-rose-300">{error}</p>

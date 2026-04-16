@@ -1,12 +1,14 @@
 "use client";
 
-import { CheckCircle2, LoaderCircle, Plus, Search } from "lucide-react";
+import { BookmarkPlus, CheckCircle2, LoaderCircle, PlayCircle, Search } from "lucide-react";
 import { useDeferredValue, useEffect, useMemo, useState, useTransition } from "react";
 import { useRouter } from "next/navigation";
 
 import { SafeImage } from "@/components/safe-image";
 import { createEntry, searchAnime } from "@/lib/api";
 import { AnimeEntry, AnimeNode } from "@/types/anime";
+
+type AddStatus = "WATCHING" | "PLANNING";
 
 export function DiscoverPanel({
   entries,
@@ -21,12 +23,16 @@ export function DiscoverPanel({
   const [results, setResults] = useState<AnimeNode[]>([]);
   const [error, setError] = useState<string | null>(null);
   const [searching, startSearchTransition] = useTransition();
-  const [addingId, setAddingId] = useState<number | null>(null);
-  const [addedIds, setAddedIds] = useState<number[]>([]);
+  const [addingKey, setAddingKey] = useState<string | null>(null);
+  const [addedItems, setAddedItems] = useState<Record<number, AddStatus>>({});
 
-  const existingEntryIds = useMemo(
-    () => new Set([...entries.map((entry) => entry.anime_id), ...addedIds]),
-    [entries, addedIds],
+  const trackedStatusByAnimeId = useMemo(
+    () =>
+      entries.reduce<Record<number, string>>((map, entry) => {
+        map[entry.anime_id] = entry.status;
+        return map;
+      }, {}),
+    [entries],
   );
 
   useEffect(() => {
@@ -47,8 +53,8 @@ export function DiscoverPanel({
     });
   }, [deferredQuery]);
 
-  async function handleAdd(item: AnimeNode) {
-    setAddingId(item.id);
+  async function handleAdd(item: AnimeNode, status: AddStatus) {
+    setAddingKey(`${item.id}:${status}`);
     setError(null);
 
     try {
@@ -56,16 +62,19 @@ export function DiscoverPanel({
         anime_id: item.id,
         title: item.title.english ?? item.title.romaji,
         cover_image: item.cover_image ?? `/api/poster/${item.id}`,
-        status: "PLANNING",
+        status,
         episodes_watched: 0,
         total_episodes: item.episodes ?? null,
       }, activeUserEmail);
-      setAddedIds((current) => [...current, item.id]);
+      setAddedItems((current) => ({
+        ...current,
+        [item.id]: status,
+      }));
       router.refresh();
     } catch {
       setError("Could not add that anime to your tracker.");
     } finally {
-      setAddingId(null);
+      setAddingKey(null);
     }
   }
 
@@ -99,6 +108,15 @@ export function DiscoverPanel({
         <p className="mt-4 text-sm text-rose-600 dark:text-rose-300">{error}</p>
       ) : null}
 
+      <div className="mt-4 flex flex-wrap gap-2 text-xs text-slate-500 dark:text-slate-400">
+        <span className="rounded-full border border-slate-200 bg-white px-3 py-1 dark:border-slate-800 dark:bg-slate-900">
+          `Start watching` adds anime to one-click episode tracking.
+        </span>
+        <span className="rounded-full border border-slate-200 bg-white px-3 py-1 dark:border-slate-800 dark:bg-slate-900">
+          `Add to queue` places it in watch queue and tracker snapshot.
+        </span>
+      </div>
+
       {searching ? (
         <div className="mt-6 inline-flex items-center gap-2 text-sm text-slate-500 dark:text-slate-300">
           <LoaderCircle className="h-4 w-4 animate-spin" />
@@ -109,8 +127,12 @@ export function DiscoverPanel({
       {!searching && deferredQuery.trim().length >= 2 ? (
         <div className="mt-6 grid gap-4 sm:grid-cols-2 xl:grid-cols-4">
           {results.map((item) => {
-            const isAdded = existingEntryIds.has(item.id);
-            const isBusy = addingId === item.id;
+            const trackedStatus = addedItems[item.id] ?? trackedStatusByAnimeId[item.id];
+            const isTracked = Boolean(trackedStatus);
+            const isWatching = trackedStatus === "WATCHING";
+            const isPlanning = trackedStatus === "PLANNING";
+            const isWatchingBusy = addingKey === `${item.id}:WATCHING`;
+            const isPlanningBusy = addingKey === `${item.id}:PLANNING`;
 
             return (
               <article
@@ -131,21 +153,39 @@ export function DiscoverPanel({
                     <h3 className="line-clamp-2 font-semibold text-slate-950 dark:text-slate-50">
                       {item.title.english ?? item.title.romaji}
                     </h3>
-                    <p className="mt-1 text-sm text-slate-600 dark:text-slate-300">
-                      {item.episodes ? `${item.episodes} episodes` : "Episode count TBA"}
-                    </p>
+                    <div className="mt-1 flex flex-wrap items-center gap-2 text-sm text-slate-600 dark:text-slate-300">
+                      <span>{item.episodes ? `${item.episodes} episodes` : "Episode count TBA"}</span>
+                      {trackedStatus ? (
+                        <span className="rounded-full bg-slate-950 px-2 py-1 text-[10px] font-semibold uppercase tracking-[0.16em] text-white dark:bg-white dark:text-slate-950">
+                          {trackedStatus}
+                        </span>
+                      ) : null}
+                    </div>
                   </div>
 
-                  <button
-                    type="button"
-                    onClick={() => handleAdd(item)}
-                    disabled={isAdded || isBusy}
-                    className="inline-flex w-full items-center justify-center gap-2 rounded-full bg-slate-950 px-4 py-3 text-sm font-semibold text-white transition hover:bg-slate-800 disabled:cursor-not-allowed disabled:bg-slate-300 disabled:text-slate-500 dark:bg-sky-500 dark:text-slate-950 dark:hover:bg-sky-400 dark:disabled:bg-slate-700 dark:disabled:text-slate-400"
-                  >
-                    {isBusy ? <LoaderCircle className="h-4 w-4 animate-spin" /> : null}
-                    {isAdded ? <CheckCircle2 className="h-4 w-4" /> : <Plus className="h-4 w-4" />}
-                    {isAdded ? "In tracker" : "Add to tracker"}
-                  </button>
+                  <div className="grid gap-2">
+                    <button
+                      type="button"
+                      onClick={() => handleAdd(item, "WATCHING")}
+                      disabled={isTracked || isWatchingBusy || isPlanningBusy}
+                      className="inline-flex w-full items-center justify-center gap-2 rounded-full bg-slate-950 px-4 py-3 text-sm font-semibold text-white transition hover:bg-slate-800 disabled:cursor-not-allowed disabled:bg-slate-300 disabled:text-slate-500 dark:bg-orange-500 dark:text-slate-950 dark:hover:bg-orange-400 dark:disabled:bg-slate-700 dark:disabled:text-slate-400"
+                    >
+                      {isWatchingBusy ? <LoaderCircle className="h-4 w-4 animate-spin" /> : null}
+                      {isWatching ? <CheckCircle2 className="h-4 w-4" /> : <PlayCircle className="h-4 w-4" />}
+                      {isWatching ? "In one-click tracking" : isTracked ? "Already tracked" : "Start watching"}
+                    </button>
+
+                    <button
+                      type="button"
+                      onClick={() => handleAdd(item, "PLANNING")}
+                      disabled={isTracked || isWatchingBusy || isPlanningBusy}
+                      className="inline-flex w-full items-center justify-center gap-2 rounded-full border border-slate-200 bg-white px-4 py-3 text-sm font-semibold text-slate-700 transition hover:bg-slate-100 disabled:cursor-not-allowed disabled:bg-slate-100 disabled:text-slate-400 dark:border-slate-700 dark:bg-slate-950 dark:text-slate-200 dark:hover:bg-slate-900 dark:disabled:bg-slate-900 dark:disabled:text-slate-500"
+                    >
+                      {isPlanningBusy ? <LoaderCircle className="h-4 w-4 animate-spin" /> : null}
+                      {isPlanning ? <CheckCircle2 className="h-4 w-4" /> : <BookmarkPlus className="h-4 w-4" />}
+                      {isPlanning ? "In queue" : isTracked ? "Already tracked" : "Add to queue"}
+                    </button>
+                  </div>
                 </div>
               </article>
             );

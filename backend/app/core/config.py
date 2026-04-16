@@ -16,6 +16,7 @@ class Settings(BaseSettings):
     jikan_base_url: str = Field(default="https://api.jikan.moe/v4", alias="JIKAN_BASE_URL")
     cache_ttl_seconds: int = Field(default=86400, alias="CACHE_TTL_SECONDS")
     allow_origins_raw: str = Field(default="http://localhost:3000", alias="ALLOW_ORIGINS")
+    seed_demo_data: bool = Field(default=True, alias="SEED_DEMO_DATA")
 
     @property
     def allow_origins(self) -> List[str]:

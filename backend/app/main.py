@@ -30,8 +30,9 @@ app.add_middleware(
 async def startup_event() -> None:
     app.state.trending_cache = TrendingAnimeCache(ttl_seconds=settings.cache_ttl_seconds)
     Base.metadata.create_all(bind=engine)
-    with SessionLocal() as session:
-        seed_demo_data(session)
+    if settings.seed_demo_data:
+        with SessionLocal() as session:
+            seed_demo_data(session)
 
 
 @app.get("/", tags=["meta"])

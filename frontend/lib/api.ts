@@ -15,7 +15,16 @@ import {
   User,
 } from "@/types/anime";
 
-const API_URL = process.env.NEXT_PUBLIC_API_URL ?? "http://localhost:8000/api/v1";
+const DIRECT_API_URL = process.env.NEXT_PUBLIC_API_URL ?? "http://localhost:8000/api/v1";
+const BROWSER_PROXY_API_URL = "/api/backend";
+
+function getApiBaseUrl(): string {
+  return typeof window === "undefined" ? DIRECT_API_URL : BROWSER_PROXY_API_URL;
+}
+
+function buildApiUrl(path: string): string {
+  return `${getApiBaseUrl()}${path}`;
+}
 
 type FetchJsonOptions = {
   userEmail?: string;
@@ -118,7 +127,7 @@ function buildHeaders(userEmail?: string, headers?: HeadersInit): HeadersInit {
 }
 
 async function fetchJson<T>(path: string, options?: FetchJsonOptions): Promise<T> {
-  const response = await fetch(`${API_URL}${path}`, {
+  const response = await fetch(buildApiUrl(path), {
     ...(options?.noStore
       ? { cache: "no-store" as const }
       : { next: { revalidate: options?.revalidate ?? 300 } }),
@@ -232,7 +241,7 @@ export async function incrementEpisodeProgress(
   userEmail?: string,
 ): Promise<AnimeEntry> {
   try {
-    const response = await fetch(`${API_URL}/entries/${entry.anime_id}/progress`, {
+    const response = await fetch(buildApiUrl(`/entries/${entry.anime_id}/progress`), {
       method: "PATCH",
       headers: buildHeaders(userEmail, {
         "Content-Type": "application/json",
@@ -263,7 +272,7 @@ export async function createEntry(
   payload: AnimeEntryCreatePayload,
   userEmail?: string,
 ): Promise<AnimeEntry> {
-  const response = await fetch(`${API_URL}/entries`, {
+  const response = await fetch(buildApiUrl("/entries"), {
     method: "POST",
     headers: buildHeaders(userEmail, {
       "Content-Type": "application/json",
@@ -288,7 +297,7 @@ export async function updateEntry(
   userEmail?: string,
 ): Promise<AnimeEntry> {
   try {
-    const response = await fetch(`${API_URL}/entries/${animeId}`, {
+    const response = await fetch(buildApiUrl(`/entries/${animeId}`), {
       method: "PATCH",
       headers: buildHeaders(userEmail, {
         "Content-Type": "application/json",
@@ -316,7 +325,7 @@ export async function updateEntry(
 
 export async function deleteEntry(animeId: number, userEmail?: string): Promise<void> {
   try {
-    const response = await fetch(`${API_URL}/entries/${animeId}`, {
+    const response = await fetch(buildApiUrl(`/entries/${animeId}`), {
       method: "DELETE",
       headers: buildHeaders(userEmail),
     });
@@ -360,7 +369,7 @@ export async function createReview(
   userEmail?: string,
 ): Promise<Review> {
   try {
-    const response = await fetch(`${API_URL}/reviews`, {
+    const response = await fetch(buildApiUrl("/reviews"), {
       method: "POST",
       headers: buildHeaders(userEmail, {
         "Content-Type": "application/json",
@@ -389,7 +398,7 @@ export async function createReview(
 
 export async function importMalList(username: string, userEmail?: string): Promise<ImportResponse> {
   try {
-    const response = await fetch(`${API_URL}/imports/mal`, {
+    const response = await fetch(buildApiUrl("/imports/mal"), {
       method: "POST",
       headers: buildHeaders(userEmail, {
         "Content-Type": "application/json",
@@ -455,7 +464,7 @@ export async function createUserAccount(
   payload: { username: string; email: string },
   userEmail?: string,
 ): Promise<User> {
-  const response = await fetch(`${API_URL}/users`, {
+  const response = await fetch(buildApiUrl("/users"), {
     method: "POST",
     headers: buildHeaders(userEmail, {
       "Content-Type": "application/json",

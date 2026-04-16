@@ -69,7 +69,7 @@ export function LibraryInsights({ summary }: { summary: LibrarySummary }) {
         })}
       </div>
 
-      <div className="mt-6 grid gap-6 xl:grid-cols-[0.82fr_1.18fr]">
+      <div className="mt-6 grid gap-6 lg:grid-cols-[320px_minmax(0,1fr)]">
         <article className="rounded-[1.75rem] border border-slate-200 bg-slate-50/80 p-5 dark:border-slate-800 dark:bg-slate-900/80">
           <div className="flex items-center gap-2 text-sm font-semibold text-slate-700 dark:text-slate-200">
             <CheckCircle2 className="h-4 w-4" />
@@ -77,12 +77,17 @@ export function LibraryInsights({ summary }: { summary: LibrarySummary }) {
           </div>
           <div className="mt-4 space-y-3">
             {summary.status_breakdown.map((item) => (
-              <div key={item.status} className="space-y-2">
-                <div className="flex items-center justify-between text-sm text-slate-600 dark:text-slate-300">
-                  <span className="capitalize">{prettyStatus(item.status)}</span>
-                  <span>{item.count}</span>
+              <div
+                key={item.status}
+                className="rounded-2xl border border-slate-200 bg-white/90 p-3 dark:border-slate-800 dark:bg-slate-950/90"
+              >
+                <div className="flex items-center justify-between gap-4 text-sm text-slate-600 dark:text-slate-300">
+                  <span className="font-medium capitalize text-slate-700 dark:text-slate-200">
+                    {prettyStatus(item.status)}
+                  </span>
+                  <span className="font-semibold text-slate-950 dark:text-slate-50">{item.count}</span>
                 </div>
-                <div className="h-2 rounded-full bg-slate-200 dark:bg-slate-800">
+                <div className="mt-3 h-2 rounded-full bg-slate-200 dark:bg-slate-800">
                   <div
                     className="h-2 rounded-full bg-gradient-to-r from-sky-500 to-cyan-300"
                     style={{
@@ -93,24 +98,18 @@ export function LibraryInsights({ summary }: { summary: LibrarySummary }) {
               </div>
             ))}
           </div>
-          <div className="mt-5 grid grid-cols-3 gap-2 text-center text-sm sm:gap-3">
-            <div className="rounded-2xl bg-white px-3 py-3 text-slate-700 dark:bg-slate-950 dark:text-slate-200">
-              <p className="font-semibold">{summary.watching_entries}</p>
-              <p className="mt-1 text-xs uppercase tracking-[0.18em] text-slate-500 dark:text-slate-400">
-                Watching
-              </p>
+          <div className="mt-5 grid grid-cols-3 gap-3 text-center">
+            <div className="rounded-2xl bg-white px-3 py-3 dark:bg-slate-950">
+              <p className="text-lg font-semibold text-slate-950 dark:text-slate-50">{summary.watching_entries}</p>
+              <p className="mt-1 text-xs text-slate-500 dark:text-slate-400">Watching</p>
             </div>
-            <div className="rounded-2xl bg-white px-3 py-3 text-slate-700 dark:bg-slate-950 dark:text-slate-200">
-              <p className="font-semibold">{summary.planning_entries}</p>
-              <p className="mt-1 text-xs uppercase tracking-[0.18em] text-slate-500 dark:text-slate-400">
-                Planning
-              </p>
+            <div className="rounded-2xl bg-white px-3 py-3 dark:bg-slate-950">
+              <p className="text-lg font-semibold text-slate-950 dark:text-slate-50">{summary.planning_entries}</p>
+              <p className="mt-1 text-xs text-slate-500 dark:text-slate-400">Planning</p>
             </div>
-            <div className="rounded-2xl bg-white px-3 py-3 text-slate-700 dark:bg-slate-950 dark:text-slate-200">
-              <p className="font-semibold">{summary.completed_entries}</p>
-              <p className="mt-1 text-xs uppercase tracking-[0.18em] text-slate-500 dark:text-slate-400">
-                Completed
-              </p>
+            <div className="rounded-2xl bg-white px-3 py-3 dark:bg-slate-950">
+              <p className="text-lg font-semibold text-slate-950 dark:text-slate-50">{summary.completed_entries}</p>
+              <p className="mt-1 text-xs text-slate-500 dark:text-slate-400">Completed</p>
             </div>
           </div>
         </article>
@@ -120,23 +119,27 @@ export function LibraryInsights({ summary }: { summary: LibrarySummary }) {
             <Clock3 className="h-4 w-4" />
             Up next
           </div>
-          <div className="mt-4 space-y-4">
+          <div className="mt-4 grid gap-4 xl:grid-cols-2">
             {summary.watch_queue.map((entry) => (
               <article
                 key={entry.anime_id}
-                className="grid gap-4 rounded-3xl border border-slate-200/70 bg-white/80 p-4 dark:border-slate-800 dark:bg-slate-950/80 sm:grid-cols-[72px_1fr_auto]"
+                className="grid gap-4 rounded-3xl border border-slate-200/70 bg-white/80 p-4 dark:border-slate-800 dark:bg-slate-950/80 sm:grid-cols-[88px_1fr]"
               >
-                <div className="relative h-[88px] overflow-hidden rounded-2xl">
+                <div className="relative h-[112px] overflow-hidden rounded-2xl">
                   <SafeImage src={entry.cover_image} alt={entry.title} fill className="object-cover" />
                 </div>
-                <div>
-                  <h3 className="font-semibold text-slate-950 dark:text-slate-50">{entry.title}</h3>
-                  <p className="mt-1 text-sm text-slate-600 dark:text-slate-300">
+                <div className="min-w-0">
+                  <div className="flex flex-wrap items-center gap-2">
+                    <h3 className="text-lg font-semibold leading-7 text-slate-950 dark:text-slate-50">
+                      {entry.title}
+                    </h3>
+                    <div className="rounded-full bg-slate-950 px-3 py-1 text-xs font-semibold uppercase tracking-[0.18em] text-white dark:bg-sky-500 dark:text-slate-950">
+                      {prettyStatus(entry.status)}
+                    </div>
+                  </div>
+                  <p className="mt-2 text-sm text-slate-600 dark:text-slate-300">
                     {entry.episodes_watched} / {entry.total_episodes ?? "?"} episodes logged
                   </p>
-                </div>
-                <div className="w-fit rounded-full bg-slate-950 px-3 py-1 text-xs font-semibold uppercase tracking-[0.18em] text-white dark:bg-sky-500 dark:text-slate-950 sm:self-center">
-                  {prettyStatus(entry.status)}
                 </div>
               </article>
             ))}

@@ -16,18 +16,15 @@ export function AnimeLibrary({ items }: { items: AnimeNode[] }) {
 
   return (
     <section className="rounded-[2rem] border border-slate-200/80 bg-white/85 p-6 shadow-card backdrop-blur dark:border-slate-800 dark:bg-slate-950/80">
-      <div className="flex items-end justify-between gap-4">
+      <div className="flex flex-col gap-3">
         <div>
           <p className="text-xs uppercase tracking-[0.3em] text-slate-500 dark:text-slate-400">
             Trending Now
           </p>
           <h2 className="mt-2 text-2xl font-semibold text-slate-950 dark:text-slate-50">
-            Fast discovery grid
+            Browse what is hot
           </h2>
         </div>
-        <p className="max-w-sm text-right text-sm text-slate-600 dark:text-slate-300">
-          Tailwind grid shifts from one card column on mobile to six on large desktop layouts.
-        </p>
       </div>
 
       <label className="mt-6 flex items-center gap-3 rounded-full border border-slate-200 bg-slate-50 px-4 py-3 text-sm text-slate-500 dark:border-slate-800 dark:bg-slate-900 dark:text-slate-300">
@@ -35,12 +32,12 @@ export function AnimeLibrary({ items }: { items: AnimeNode[] }) {
         <input
           value={query}
           onChange={(event) => setQuery(event.target.value)}
-          placeholder="Filter your library view"
+          placeholder="Filter titles"
           className="w-full bg-transparent outline-none placeholder:text-slate-400"
         />
       </label>
 
-      <div className="mt-6 grid grid-cols-1 gap-4 sm:grid-cols-2 lg:grid-cols-4 xl:grid-cols-5 2xl:grid-cols-6">
+      <div className="mt-6 grid grid-cols-1 gap-5 sm:grid-cols-2 xl:grid-cols-3 2xl:grid-cols-4">
         {filteredItems.map((item) => (
           <article
             key={item.id}
@@ -60,7 +57,7 @@ export function AnimeLibrary({ items }: { items: AnimeNode[] }) {
               )}
             </div>
             <div className="space-y-2 p-4">
-              <h3 className="line-clamp-2 font-semibold text-slate-950 dark:text-slate-50">
+              <h3 className="line-clamp-3 min-h-[5.25rem] text-xl font-semibold leading-8 text-slate-950 dark:text-slate-50">
                 {item.title.english ?? item.title.romaji}
               </h3>
               <div className="flex items-center justify-between text-sm text-slate-600 dark:text-slate-300">

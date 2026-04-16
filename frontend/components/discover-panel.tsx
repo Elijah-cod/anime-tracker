@@ -80,7 +80,7 @@ export function DiscoverPanel({
 
   return (
     <section className="rounded-[2rem] border border-slate-200/80 bg-white/85 p-6 shadow-card backdrop-blur dark:border-slate-800 dark:bg-slate-950/80">
-      <div className="flex items-end justify-between gap-4">
+      <div className="flex flex-col gap-3">
         <div>
           <p className="text-xs uppercase tracking-[0.3em] text-slate-500 dark:text-slate-400">
             Discover
@@ -89,9 +89,6 @@ export function DiscoverPanel({
             Search AniList and save titles
           </h2>
         </div>
-        <p className="max-w-sm text-right text-sm text-slate-600 dark:text-slate-300">
-          Find a show, add it to your tracker, and refresh the rest of the dashboard instantly.
-        </p>
       </div>
 
       <label className="mt-6 flex items-center gap-3 rounded-full border border-slate-200 bg-slate-50 px-4 py-3 text-sm text-slate-500 dark:border-slate-800 dark:bg-slate-900 dark:text-slate-300">
@@ -110,10 +107,10 @@ export function DiscoverPanel({
 
       <div className="mt-4 flex flex-wrap gap-2 text-xs text-slate-500 dark:text-slate-400">
         <span className="rounded-full border border-slate-200 bg-white px-3 py-1 dark:border-slate-800 dark:bg-slate-900">
-          `Start watching` adds anime to one-click episode tracking.
+          Start watching for one-click tracking
         </span>
         <span className="rounded-full border border-slate-200 bg-white px-3 py-1 dark:border-slate-800 dark:bg-slate-900">
-          `Add to queue` places it in watch queue and tracker snapshot.
+          Add to queue for queue and snapshot
         </span>
       </div>
 
@@ -125,7 +122,7 @@ export function DiscoverPanel({
       ) : null}
 
       {!searching && deferredQuery.trim().length >= 2 ? (
-        <div className="mt-6 grid gap-4 sm:grid-cols-2 xl:grid-cols-4">
+        <div className="mt-6 grid grid-cols-1 gap-5 md:grid-cols-2 xl:grid-cols-3">
           {results.map((item) => {
             const trackedStatus = addedItems[item.id] ?? trackedStatusByAnimeId[item.id];
             const isTracked = Boolean(trackedStatus);
@@ -148,9 +145,9 @@ export function DiscoverPanel({
                     sizes="(max-width: 1280px) 50vw, 25vw"
                   />
                 </div>
-                <div className="space-y-3 p-4">
+                <div className="space-y-4 p-5">
                   <div>
-                    <h3 className="line-clamp-2 font-semibold text-slate-950 dark:text-slate-50">
+                    <h3 className="line-clamp-3 min-h-[6.25rem] text-2xl font-semibold leading-9 text-slate-950 dark:text-slate-50">
                       {item.title.english ?? item.title.romaji}
                     </h3>
                     <div className="mt-1 flex flex-wrap items-center gap-2 text-sm text-slate-600 dark:text-slate-300">
@@ -168,7 +165,7 @@ export function DiscoverPanel({
                       type="button"
                       onClick={() => handleAdd(item, "WATCHING")}
                       disabled={isTracked || isWatchingBusy || isPlanningBusy}
-                      className="inline-flex w-full items-center justify-center gap-2 rounded-full bg-slate-950 px-4 py-3 text-sm font-semibold text-white transition hover:bg-slate-800 disabled:cursor-not-allowed disabled:bg-slate-300 disabled:text-slate-500 dark:bg-orange-500 dark:text-slate-950 dark:hover:bg-orange-400 dark:disabled:bg-slate-700 dark:disabled:text-slate-400"
+                      className="inline-flex w-full items-center justify-center gap-2 rounded-full bg-slate-950 px-4 py-3.5 text-base font-semibold text-white transition hover:bg-slate-800 disabled:cursor-not-allowed disabled:bg-slate-300 disabled:text-slate-500 dark:bg-orange-500 dark:text-slate-950 dark:hover:bg-orange-400 dark:disabled:bg-slate-700 dark:disabled:text-slate-400"
                     >
                       {isWatchingBusy ? <LoaderCircle className="h-4 w-4 animate-spin" /> : null}
                       {isWatching ? <CheckCircle2 className="h-4 w-4" /> : <PlayCircle className="h-4 w-4" />}
@@ -179,7 +176,7 @@ export function DiscoverPanel({
                       type="button"
                       onClick={() => handleAdd(item, "PLANNING")}
                       disabled={isTracked || isWatchingBusy || isPlanningBusy}
-                      className="inline-flex w-full items-center justify-center gap-2 rounded-full border border-slate-200 bg-white px-4 py-3 text-sm font-semibold text-slate-700 transition hover:bg-slate-100 disabled:cursor-not-allowed disabled:bg-slate-100 disabled:text-slate-400 dark:border-slate-700 dark:bg-slate-950 dark:text-slate-200 dark:hover:bg-slate-900 dark:disabled:bg-slate-900 dark:disabled:text-slate-500"
+                      className="inline-flex w-full items-center justify-center gap-2 rounded-full border border-slate-200 bg-white px-4 py-3.5 text-base font-semibold text-slate-700 transition hover:bg-slate-100 disabled:cursor-not-allowed disabled:bg-slate-100 disabled:text-slate-400 dark:border-slate-700 dark:bg-slate-950 dark:text-slate-200 dark:hover:bg-slate-900 dark:disabled:bg-slate-900 dark:disabled:text-slate-500"
                     >
                       {isPlanningBusy ? <LoaderCircle className="h-4 w-4 animate-spin" /> : null}
                       {isPlanning ? <CheckCircle2 className="h-4 w-4" /> : <BookmarkPlus className="h-4 w-4" />}

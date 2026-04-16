@@ -121,27 +121,26 @@ export default async function HomePage() {
         <ReleaseCalendar items={calendar} />
       </section>
 
-      <section className="grid gap-8 xl:grid-cols-[1.05fr_0.95fr]">
-        <DiscoverPanel entries={entries} activeUserEmail={activeUserEmail} />
-        <div className="space-y-8">
-          <LibraryInsights summary={summary} />
-          <article className="rounded-[2rem] border border-slate-200/80 bg-white/85 p-6 shadow-card backdrop-blur dark:border-slate-800 dark:bg-slate-950/80">
+      <DiscoverPanel entries={entries} activeUserEmail={activeUserEmail} />
+
+      <LibraryInsights summary={summary} />
+
+      <section className="rounded-[2rem] border border-slate-200/80 bg-white/85 p-6 shadow-card backdrop-blur dark:border-slate-800 dark:bg-slate-950/80">
+        <div className="flex flex-col gap-4 sm:flex-row sm:items-center sm:justify-between">
+          <div>
             <p className="text-xs uppercase tracking-[0.3em] text-slate-500 dark:text-slate-400">
-              Workspace
+              Library
             </p>
             <h2 className="mt-2 text-2xl font-semibold text-slate-950 dark:text-slate-50">
-              Keep editing in the library workspace
+              Use the library workspace for cleanup and status edits
             </h2>
-            <p className="mt-3 text-sm leading-7 text-slate-600 dark:text-slate-300">
-              Status changes, score cleanup, and removals now live in one focused page.
-            </p>
-            <Link
-              href="/library"
-              className="mt-5 inline-flex items-center gap-2 rounded-full bg-slate-950 px-5 py-3 text-sm font-semibold text-white transition hover:bg-slate-800 dark:bg-white dark:text-slate-950 dark:hover:bg-slate-200"
-            >
-              Open library
-            </Link>
-          </article>
+          </div>
+          <Link
+            href="/library"
+            className="inline-flex items-center gap-2 rounded-full bg-slate-950 px-5 py-3 text-sm font-semibold text-white transition hover:bg-slate-800 dark:bg-white dark:text-slate-950 dark:hover:bg-slate-200"
+          >
+            Open library
+          </Link>
         </div>
       </section>
 

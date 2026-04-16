@@ -30,12 +30,8 @@ export default async function LibraryPage() {
           Library
         </p>
         <h1 className="mt-3 text-4xl font-semibold tracking-tight text-slate-950 dark:text-white md:text-5xl">
-          Manage every tracked show from one focused workspace.
+          Tune your tracker in one place.
         </h1>
-        <p className="mt-4 max-w-2xl text-base leading-7 text-slate-600 dark:text-slate-300">
-          Review your queue, adjust statuses and scores, and keep the library clean without
-          bouncing around the dashboard.
-        </p>
       </section>
 
       <LibraryInsights summary={summary} />

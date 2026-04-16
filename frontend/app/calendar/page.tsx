@@ -29,15 +29,11 @@ export default async function CalendarPage() {
 
       <section className="rounded-[2.25rem] border border-white/60 bg-white/70 p-6 shadow-card backdrop-blur dark:border-white/10 dark:bg-slate-950/70 md:p-8">
         <p className="text-xs uppercase tracking-[0.3em] text-slate-500 dark:text-slate-400">
-          Calendar View
+          Calendar
         </p>
         <h1 className="mt-3 text-4xl font-semibold tracking-tight text-slate-950 dark:text-white md:text-5xl">
-          Stay ahead of every episode drop.
+          Upcoming releases at a glance.
         </h1>
-        <p className="mt-4 max-w-2xl text-base leading-7 text-slate-600 dark:text-slate-300">
-          Track your current queue, review upcoming release times, and keep your watch rhythm in
-          one place.
-        </p>
       </section>
 
       <LibraryInsights summary={summary} />

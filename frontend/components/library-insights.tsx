@@ -35,7 +35,7 @@ function prettyStatus(status: string) {
 export function LibraryInsights({ summary }: { summary: LibrarySummary }) {
   return (
     <section className="rounded-[2rem] border border-slate-200/80 bg-white/85 p-6 shadow-card backdrop-blur dark:border-slate-800 dark:bg-slate-950/80">
-      <div className="flex flex-col gap-3 md:flex-row md:items-end md:justify-between">
+      <div className="flex flex-col gap-3">
         <div>
           <p className="text-xs uppercase tracking-[0.3em] text-slate-500 dark:text-slate-400">
             Library Insights
@@ -44,10 +44,6 @@ export function LibraryInsights({ summary }: { summary: LibrarySummary }) {
             Watch queue and tracker snapshot
           </h2>
         </div>
-        <p className="max-w-sm text-sm text-slate-600 dark:text-slate-300">
-          A quick read on how much you are tracking, what is completed, and what is next in the
-          queue.
-        </p>
       </div>
 
       <div className="mt-6 grid gap-4 md:grid-cols-3">
@@ -73,7 +69,7 @@ export function LibraryInsights({ summary }: { summary: LibrarySummary }) {
         })}
       </div>
 
-      <div className="mt-6 grid gap-6 xl:grid-cols-[0.8fr_1.2fr]">
+      <div className="mt-6 grid gap-6 xl:grid-cols-[0.82fr_1.18fr]">
         <article className="rounded-[1.75rem] border border-slate-200 bg-slate-50/80 p-5 dark:border-slate-800 dark:bg-slate-900/80">
           <div className="flex items-center gap-2 text-sm font-semibold text-slate-700 dark:text-slate-200">
             <CheckCircle2 className="h-4 w-4" />
@@ -97,7 +93,7 @@ export function LibraryInsights({ summary }: { summary: LibrarySummary }) {
               </div>
             ))}
           </div>
-          <div className="mt-5 grid grid-cols-3 gap-3 text-center text-sm">
+          <div className="mt-5 grid grid-cols-3 gap-2 text-center text-sm sm:gap-3">
             <div className="rounded-2xl bg-white px-3 py-3 text-slate-700 dark:bg-slate-950 dark:text-slate-200">
               <p className="font-semibold">{summary.watching_entries}</p>
               <p className="mt-1 text-xs uppercase tracking-[0.18em] text-slate-500 dark:text-slate-400">
@@ -128,7 +124,7 @@ export function LibraryInsights({ summary }: { summary: LibrarySummary }) {
             {summary.watch_queue.map((entry) => (
               <article
                 key={entry.anime_id}
-                className="grid gap-4 rounded-3xl border border-slate-200/70 bg-white/80 p-4 dark:border-slate-800 dark:bg-slate-950/80 md:grid-cols-[72px_1fr_auto]"
+                className="grid gap-4 rounded-3xl border border-slate-200/70 bg-white/80 p-4 dark:border-slate-800 dark:bg-slate-950/80 sm:grid-cols-[72px_1fr_auto]"
               >
                 <div className="relative h-[88px] overflow-hidden rounded-2xl">
                   <SafeImage src={entry.cover_image} alt={entry.title} fill className="object-cover" />
@@ -139,7 +135,7 @@ export function LibraryInsights({ summary }: { summary: LibrarySummary }) {
                     {entry.episodes_watched} / {entry.total_episodes ?? "?"} episodes logged
                   </p>
                 </div>
-                <div className="self-center rounded-full bg-slate-950 px-3 py-1 text-xs font-semibold uppercase tracking-[0.18em] text-white dark:bg-sky-500 dark:text-slate-950">
+                <div className="w-fit rounded-full bg-slate-950 px-3 py-1 text-xs font-semibold uppercase tracking-[0.18em] text-white dark:bg-sky-500 dark:text-slate-950 sm:self-center">
                   {prettyStatus(entry.status)}
                 </div>
               </article>
@@ -148,12 +144,9 @@ export function LibraryInsights({ summary }: { summary: LibrarySummary }) {
 
           {!summary.watch_queue.length ? (
             <div className="mt-4 space-y-2 text-sm text-slate-500 dark:text-slate-400">
-              <p>Add a few planning or watching titles to build your queue.</p>
+              <p>Queue is empty.</p>
               <p>
-                Use <span className="font-semibold">Discover → Add to queue</span> for{" "}
-                <span className="font-semibold">PLANNING</span> titles or{" "}
-                <span className="font-semibold">Discover → Start watching</span> for anime you want
-                in the tracker snapshot right away. You can also update statuses from{" "}
+                Add titles from Discover or update statuses in{" "}
                 <Link href="/library" className="underline underline-offset-4">
                   Library
                 </Link>

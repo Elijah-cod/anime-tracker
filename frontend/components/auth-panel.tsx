@@ -48,7 +48,7 @@ export function AuthPanel({ users }: { users: User[] }) {
   }
 
   return (
-    <section className="grid gap-8 lg:grid-cols-[1.05fr_0.95fr]">
+    <section className="grid gap-6 lg:grid-cols-[1.05fr_0.95fr]">
       <div className="rounded-[2rem] border border-white/60 bg-white/80 p-6 shadow-card backdrop-blur dark:border-white/10 dark:bg-slate-950/75 md:p-8">
         <div className="flex items-start justify-between gap-4">
           <div>
@@ -94,10 +94,6 @@ export function AuthPanel({ users }: { users: User[] }) {
         <h2 className="mt-3 text-3xl font-semibold tracking-tight text-slate-950 dark:text-slate-50">
           Start a fresh anime profile
         </h2>
-        <p className="mt-3 text-sm leading-7 text-slate-600 dark:text-slate-300">
-          This local auth flow is lightweight on purpose so we can keep building without waiting on
-          Clerk or NextAuth. Your selected account becomes the active scope for the whole app.
-        </p>
 
         <form
           onSubmit={handleCreate}

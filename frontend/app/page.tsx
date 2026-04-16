@@ -1,7 +1,8 @@
 import Image from "next/image";
 import { cookies } from "next/headers";
+import Link from "next/link";
 import { redirect } from "next/navigation";
-import { ArrowUpRight, Sparkles, Workflow } from "lucide-react";
+import { BookOpenCheck, PlayCircle, Sparkles } from "lucide-react";
 
 import { ACCOUNT_COOKIE_NAME, decodeActiveUserEmail } from "@/lib/account-session";
 import { AnimeLibrary } from "@/components/anime-library";
@@ -9,7 +10,6 @@ import { SiteNav } from "@/components/site-nav";
 import { CurrentProgress } from "@/components/current-progress";
 import { DiscoverPanel } from "@/components/discover-panel";
 import { LibraryInsights } from "@/components/library-insights";
-import { LibraryManager } from "@/components/library-manager";
 import { MalImportPanel } from "@/components/mal-import-panel";
 import { ReleaseCalendar } from "@/components/release-calendar";
 import { ReviewsPanel } from "@/components/reviews-panel";
@@ -45,7 +45,7 @@ export default async function HomePage() {
       <SiteNav currentPath="/" currentUser={currentUser} />
 
       <section className="overflow-hidden rounded-[2.25rem] border border-white/60 bg-white/70 p-6 shadow-card backdrop-blur dark:border-white/10 dark:bg-slate-950/70 md:p-8">
-        <div className="flex flex-col gap-8 lg:flex-row lg:items-start lg:justify-between">
+        <div className="grid gap-8 xl:grid-cols-[1.2fr_0.8fr]">
           <div className="max-w-3xl">
             <div className="inline-flex items-center gap-4 rounded-full border border-white/70 bg-white/70 px-4 py-3 shadow-sm backdrop-blur dark:border-white/10 dark:bg-slate-900/70">
               <div className="relative h-12 w-12 overflow-hidden rounded-2xl">
@@ -69,35 +69,48 @@ export default async function HomePage() {
               AniList powered
             </div>
             <h1 className="mt-5 max-w-4xl text-4xl font-semibold tracking-tight text-slate-950 dark:text-white md:text-6xl">
-              A fast anime tracker built for one-click progress, local release times, and clean
-              discovery.
+              Track, queue, and comment without the clutter.
             </h1>
             <p className="mt-5 max-w-2xl text-base leading-7 text-slate-600 dark:text-slate-300 md:text-lg">
-              Next.js on the front, FastAPI in the middle, PostgreSQL underneath. The whole app is
-              structured to stay deployment-friendly for Vercel, Render or Railway, and serverless
-              Postgres.
+              Your dashboard keeps progress, release times, queue, and community comments in one
+              clean workspace.
             </p>
+
+            <div className="mt-6 flex flex-wrap gap-3">
+              <Link
+                href="/library"
+                className="inline-flex items-center gap-2 rounded-full bg-slate-950 px-5 py-3 text-sm font-semibold text-white transition hover:bg-slate-800 dark:bg-white dark:text-slate-950 dark:hover:bg-slate-200"
+              >
+                <BookOpenCheck className="h-4 w-4" />
+                Open library
+              </Link>
+              <Link
+                href="/calendar"
+                className="inline-flex items-center gap-2 rounded-full border border-slate-200 bg-slate-50 px-5 py-3 text-sm font-semibold text-slate-700 transition hover:bg-slate-100 dark:border-slate-800 dark:bg-slate-900 dark:text-slate-200 dark:hover:bg-slate-800"
+              >
+                <PlayCircle className="h-4 w-4" />
+                View schedule
+              </Link>
+            </div>
           </div>
 
-          <div className="flex flex-col gap-3">
-            <ThemeToggle />
-            <div className="rounded-[1.75rem] border border-slate-200/80 bg-slate-50/80 p-5 dark:border-slate-800 dark:bg-slate-900/70">
-              <div className="flex items-center gap-3 text-sm font-medium text-slate-600 dark:text-slate-300">
-                <Workflow className="h-4 w-4" />
-                Agile Stream branch flow
-              </div>
-              <div className="mt-4 space-y-3 text-sm text-slate-700 dark:text-slate-200">
-                <div className="flex items-center justify-between gap-4 rounded-2xl bg-white px-4 py-3 dark:bg-slate-950">
-                  <code className="font-mono">feature/*</code>
-                  <ArrowUpRight className="h-4 w-4" />
-                  <code className="font-mono">develop</code>
-                </div>
-                <div className="flex items-center justify-between gap-4 rounded-2xl bg-white px-4 py-3 dark:bg-slate-950">
-                  <code className="font-mono">develop</code>
-                  <ArrowUpRight className="h-4 w-4" />
-                  <code className="font-mono">main</code>
-                </div>
-              </div>
+          <div className="grid gap-4 sm:grid-cols-[auto_1fr] xl:grid-cols-1">
+            <div className="sm:justify-self-start xl:justify-self-end">
+              <ThemeToggle />
+            </div>
+            <div className="grid gap-4 sm:grid-cols-3 xl:grid-cols-1">
+              <article className="rounded-[1.75rem] border border-sky-200 bg-sky-50/80 p-5 text-sky-800 dark:border-sky-500/20 dark:bg-sky-500/10 dark:text-sky-200">
+                <p className="text-sm font-semibold">Tracked</p>
+                <p className="mt-3 text-3xl font-semibold">{summary.total_entries}</p>
+              </article>
+              <article className="rounded-[1.75rem] border border-orange-200 bg-orange-50/80 p-5 text-orange-800 dark:border-orange-500/20 dark:bg-orange-500/10 dark:text-orange-200">
+                <p className="text-sm font-semibold">Watching</p>
+                <p className="mt-3 text-3xl font-semibold">{summary.watching_entries}</p>
+              </article>
+              <article className="rounded-[1.75rem] border border-fuchsia-200 bg-fuchsia-50/80 p-5 text-fuchsia-800 dark:border-fuchsia-500/20 dark:bg-fuchsia-500/10 dark:text-fuchsia-200">
+                <p className="text-sm font-semibold">Comments</p>
+                <p className="mt-3 text-3xl font-semibold">{reviews.length}</p>
+              </article>
             </div>
           </div>
         </div>
@@ -108,11 +121,29 @@ export default async function HomePage() {
         <ReleaseCalendar items={calendar} />
       </section>
 
-      <DiscoverPanel entries={entries} activeUserEmail={activeUserEmail} />
-
-      <LibraryInsights summary={summary} />
-
-      <LibraryManager entries={entries} activeUserEmail={activeUserEmail} />
+      <section className="grid gap-8 xl:grid-cols-[1.05fr_0.95fr]">
+        <DiscoverPanel entries={entries} activeUserEmail={activeUserEmail} />
+        <div className="space-y-8">
+          <LibraryInsights summary={summary} />
+          <article className="rounded-[2rem] border border-slate-200/80 bg-white/85 p-6 shadow-card backdrop-blur dark:border-slate-800 dark:bg-slate-950/80">
+            <p className="text-xs uppercase tracking-[0.3em] text-slate-500 dark:text-slate-400">
+              Workspace
+            </p>
+            <h2 className="mt-2 text-2xl font-semibold text-slate-950 dark:text-slate-50">
+              Keep editing in the library workspace
+            </h2>
+            <p className="mt-3 text-sm leading-7 text-slate-600 dark:text-slate-300">
+              Status changes, score cleanup, and removals now live in one focused page.
+            </p>
+            <Link
+              href="/library"
+              className="mt-5 inline-flex items-center gap-2 rounded-full bg-slate-950 px-5 py-3 text-sm font-semibold text-white transition hover:bg-slate-800 dark:bg-white dark:text-slate-950 dark:hover:bg-slate-200"
+            >
+              Open library
+            </Link>
+          </article>
+        </div>
+      </section>
 
       <AnimeLibrary items={trending} />
 
@@ -123,33 +154,6 @@ export default async function HomePage() {
           initialReviews={reviews}
           activeUserEmail={activeUserEmail}
         />
-      </section>
-
-      <section className="grid gap-6 md:grid-cols-2">
-        <article className="rounded-[2rem] border border-slate-200/80 bg-white/85 p-6 shadow-card backdrop-blur dark:border-slate-800 dark:bg-slate-950/80">
-          <p className="text-xs uppercase tracking-[0.3em] text-slate-500 dark:text-slate-400">
-            Future Proofing
-          </p>
-          <h2 className="mt-2 text-2xl font-semibold text-slate-950 dark:text-slate-50">
-            Social login ready
-          </h2>
-          <p className="mt-3 text-sm leading-7 text-slate-600 dark:text-slate-300">
-            The repo is structured so Clerk or NextAuth.js can slot in later for Google, GitHub,
-            or Discord sign-in without reshaping the app shell.
-          </p>
-        </article>
-        <article className="rounded-[2rem] border border-slate-200/80 bg-white/85 p-6 shadow-card backdrop-blur dark:border-slate-800 dark:bg-slate-950/80">
-          <p className="text-xs uppercase tracking-[0.3em] text-slate-500 dark:text-slate-400">
-            Analytics
-          </p>
-          <h2 className="mt-2 text-2xl font-semibold text-slate-950 dark:text-slate-50">
-            Vercel Analytics enabled
-          </h2>
-          <p className="mt-3 text-sm leading-7 text-slate-600 dark:text-slate-300">
-            The frontend layout already includes the analytics hook so usage insights can flow as
-            soon as the app is deployed on Vercel.
-          </p>
-        </article>
       </section>
     </main>
   );

@@ -43,12 +43,8 @@ export default async function ProfilePage() {
           Profile
         </p>
         <h1 className="mt-3 text-4xl font-semibold tracking-tight text-slate-950 dark:text-white md:text-5xl">
-          Manage accounts and review your tracking identity.
+          Account and activity.
         </h1>
-        <p className="mt-4 max-w-2xl text-base leading-7 text-slate-600 dark:text-slate-300">
-          Switch between scoped accounts, create a new local profile, and see the stats and reviews
-          tied to the active user.
-        </p>
       </section>
 
       <ProfileOverview currentUser={currentUser} dashboard={dashboard} />

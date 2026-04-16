@@ -14,11 +14,21 @@ export function AuthPanel({ users }: { users: User[] }) {
   const [message, setMessage] = useState<string | null>(null);
   const [isPending, startTransition] = useTransition();
 
+  function enterDashboard(email: string) {
+    setActiveUserEmail(email);
+
+    if (typeof window !== "undefined") {
+      window.location.assign("/");
+      return;
+    }
+
+    router.replace("/");
+    router.refresh();
+  }
+
   function continueAs(email: string) {
     startTransition(() => {
-      setActiveUserEmail(email);
-      router.push("/");
-      router.refresh();
+      enterDashboard(email);
     });
   }
 
@@ -37,12 +47,14 @@ export function AuthPanel({ users }: { users: User[] }) {
           username: formState.username.trim(),
           email: formState.email.trim(),
         });
-        setActiveUserEmail(user.email);
         setFormState({ username: "", email: "" });
-        router.push("/");
-        router.refresh();
-      } catch {
-        setMessage("Could not create that account right now.");
+        enterDashboard(user.email);
+      } catch (createError) {
+        setMessage(
+          createError instanceof Error
+            ? createError.message
+            : "Could not create that account right now.",
+        );
       }
     });
   }

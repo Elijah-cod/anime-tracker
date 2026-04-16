@@ -23,6 +23,83 @@ type FetchJsonOptions = {
   noStore?: boolean;
 };
 
+function normalizeText(value?: string | null): string {
+  return (value ?? "")
+    .toLowerCase()
+    .replace(/[^a-z0-9]+/g, " ")
+    .trim();
+}
+
+function getPosterSource(animeId: number, fallback?: string | null): string | null {
+  if (animeId > 0) {
+    return `/api/poster/${animeId}`;
+  }
+
+  return fallback ?? null;
+}
+
+function normalizeAnimeNode(node: AnimeNode): AnimeNode {
+  return {
+    ...node,
+    cover_image: getPosterSource(node.id, node.cover_image),
+  };
+}
+
+function normalizeCalendarItem(item: AnimeCalendarItem): AnimeCalendarItem {
+  return {
+    ...item,
+    cover_image: getPosterSource(item.id, item.cover_image),
+  };
+}
+
+function scoreAnimeMatch(item: AnimeNode, query: string): number {
+  const normalizedQuery = normalizeText(query);
+  const normalizedEnglish = normalizeText(item.title.english);
+  const normalizedRomaji = normalizeText(item.title.romaji);
+  const titles = [normalizedEnglish, normalizedRomaji].filter(Boolean);
+
+  let score = item.average_score ?? 0;
+
+  for (const title of titles) {
+    if (title === normalizedQuery) {
+      score += 400;
+    } else if (title.startsWith(normalizedQuery)) {
+      score += 250;
+    } else if (title.includes(normalizedQuery)) {
+      score += 120;
+    }
+
+    if (normalizedQuery.length >= 3) {
+      const queryWords = normalizedQuery.split(" ");
+      const matchingWords = queryWords.filter((word) => title.includes(word));
+      score += matchingWords.length * 20;
+    }
+  }
+
+  return score;
+}
+
+async function readErrorMessage(response: Response, fallbackMessage: string): Promise<string> {
+  try {
+    const payload = await response.json();
+
+    if (typeof payload?.detail === "string" && payload.detail.trim()) {
+      return payload.detail;
+    }
+
+    if (Array.isArray(payload?.detail) && payload.detail.length) {
+      return payload.detail
+        .map((item: { msg?: string }) => item?.msg)
+        .filter(Boolean)
+        .join(", ");
+    }
+  } catch {
+    return fallbackMessage;
+  }
+
+  return fallbackMessage;
+}
+
 function normalizeEntry(entry: AnimeEntry): AnimeEntry {
   const parsedScore =
     typeof entry.score === "string" ? Number.parseFloat(entry.score) : entry.score;
@@ -58,7 +135,7 @@ async function fetchJson<T>(path: string, options?: FetchJsonOptions): Promise<T
 export async function getTrendingAnime(): Promise<AnimeNode[]> {
   try {
     const response = await fetchJson<{ items: AnimeNode[] }>("/anime/trending?per_page=6");
-    return response.items;
+    return response.items.map(normalizeAnimeNode);
   } catch {
     return mockTrending;
   }
@@ -70,17 +147,16 @@ export async function searchAnime(query: string): Promise<AnimeNode[]> {
     return [];
   }
 
-  try {
-    const response = await fetchJson<{ items: AnimeNode[] }>(
-      `/anime/search?query=${encodeURIComponent(trimmedQuery)}&per_page=8`,
-    );
-    return response.items;
-  } catch {
-    return mockTrending.filter((item) => {
-      const haystack = `${item.title.romaji} ${item.title.english ?? ""}`.toLowerCase();
-      return haystack.includes(trimmedQuery.toLowerCase());
-    });
-  }
+  const response = await fetchJson<{ items: AnimeNode[] }>(
+    `/anime/search?query=${encodeURIComponent(trimmedQuery)}&per_page=8`,
+    {
+      noStore: true,
+    },
+  );
+
+  return response.items
+    .map(normalizeAnimeNode)
+    .sort((left, right) => scoreAnimeMatch(right, trimmedQuery) - scoreAnimeMatch(left, trimmedQuery));
 }
 
 export async function getReleaseCalendar(): Promise<AnimeCalendarItem[]> {
@@ -88,7 +164,7 @@ export async function getReleaseCalendar(): Promise<AnimeCalendarItem[]> {
     const response = await fetchJson<{ items: AnimeCalendarItem[] }>(
       "/anime/release-calendar?per_page=8",
     );
-    return response.items;
+    return response.items.map(normalizeCalendarItem);
   } catch {
     return mockCalendar;
   }
@@ -187,35 +263,23 @@ export async function createEntry(
   payload: AnimeEntryCreatePayload,
   userEmail?: string,
 ): Promise<AnimeEntry> {
-  try {
-    const response = await fetch(`${API_URL}/entries`, {
-      method: "POST",
-      headers: buildHeaders(userEmail, {
-        "Content-Type": "application/json",
-      }),
-      body: JSON.stringify({
-        user_id: payload.user_id ?? 1,
-        episodes_watched: 0,
-        ...payload,
-      }),
-    });
+  const response = await fetch(`${API_URL}/entries`, {
+    method: "POST",
+    headers: buildHeaders(userEmail, {
+      "Content-Type": "application/json",
+    }),
+    body: JSON.stringify({
+      user_id: payload.user_id ?? 1,
+      episodes_watched: 0,
+      ...payload,
+    }),
+  });
 
-    if (!response.ok) {
-      throw new Error("Create entry request failed");
-    }
-
-    return normalizeEntry(await response.json());
-  } catch {
-    return normalizeEntry({
-      anime_id: payload.anime_id,
-      title: payload.title,
-      cover_image: payload.cover_image ?? null,
-      status: payload.status,
-      episodes_watched: payload.episodes_watched ?? 0,
-      total_episodes: payload.total_episodes ?? null,
-      score: payload.score ?? null,
-    });
+  if (!response.ok) {
+    throw new Error(await readErrorMessage(response, "Could not save that anime right now."));
   }
+
+  return normalizeEntry(await response.json());
 }
 
 export async function updateEntry(
@@ -391,29 +455,19 @@ export async function createUserAccount(
   payload: { username: string; email: string },
   userEmail?: string,
 ): Promise<User> {
-  try {
-    const response = await fetch(`${API_URL}/users`, {
-      method: "POST",
-      headers: buildHeaders(userEmail, {
-        "Content-Type": "application/json",
-      }),
-      body: JSON.stringify(payload),
-    });
+  const response = await fetch(`${API_URL}/users`, {
+    method: "POST",
+    headers: buildHeaders(userEmail, {
+      "Content-Type": "application/json",
+    }),
+    body: JSON.stringify(payload),
+  });
 
-    if (!response.ok) {
-      throw new Error("Create user request failed");
-    }
-
-    return response.json();
-  } catch {
-    return {
-      id: Date.now(),
-      username: payload.username,
-      email: payload.email.toLowerCase(),
-      auth_provider: "local",
-      created_at: new Date().toISOString(),
-    };
+  if (!response.ok) {
+    throw new Error(await readErrorMessage(response, "Could not create that account right now."));
   }
+
+  return response.json();
 }
 
 function buildUserDashboardFallback(userEmail?: string): UserDashboard {

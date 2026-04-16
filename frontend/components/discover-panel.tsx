@@ -1,7 +1,7 @@
 "use client";
 
 import { BookmarkPlus, CheckCircle2, LoaderCircle, PlayCircle, Search } from "lucide-react";
-import { useDeferredValue, useEffect, useMemo, useState, useTransition } from "react";
+import { useDeferredValue, useEffect, useMemo, useRef, useState, useTransition } from "react";
 import { useRouter } from "next/navigation";
 
 import { SafeImage } from "@/components/safe-image";
@@ -20,6 +20,7 @@ export function DiscoverPanel({
   const router = useRouter();
   const [query, setQuery] = useState("");
   const deferredQuery = useDeferredValue(query);
+  const searchRequestId = useRef(0);
   const [results, setResults] = useState<AnimeNode[]>([]);
   const [error, setError] = useState<string | null>(null);
   const [searching, startSearchTransition] = useTransition();
@@ -37,8 +38,11 @@ export function DiscoverPanel({
 
   useEffect(() => {
     const normalizedQuery = deferredQuery.trim();
+    const requestId = ++searchRequestId.current;
+
     if (normalizedQuery.length < 2) {
       setResults([]);
+      setError(null);
       return;
     }
 
@@ -46,9 +50,18 @@ export function DiscoverPanel({
     startSearchTransition(async () => {
       try {
         const items = await searchAnime(normalizedQuery);
+        if (searchRequestId.current !== requestId) {
+          return;
+        }
         setResults(items);
-      } catch {
-        setError("Search is unavailable right now.");
+      } catch (searchError) {
+        if (searchRequestId.current !== requestId) {
+          return;
+        }
+        setResults([]);
+        setError(
+          searchError instanceof Error ? searchError.message : "Search is unavailable right now.",
+        );
       }
     });
   }, [deferredQuery]);
@@ -71,8 +84,12 @@ export function DiscoverPanel({
         [item.id]: status,
       }));
       router.refresh();
-    } catch {
-      setError("Could not add that anime to your tracker.");
+    } catch (createError) {
+      setError(
+        createError instanceof Error
+          ? createError.message
+          : "Could not add that anime to your tracker.",
+      );
     } finally {
       setAddingKey(null);
     }

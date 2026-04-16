@@ -20,9 +20,20 @@ export function AccountPanel({
   const [message, setMessage] = useState<string | null>(null);
   const [isPending, startTransition] = useTransition();
 
-  function switchAccount(email: string) {
+  function reloadProfile(email: string) {
     setActiveUserEmail(email);
+
+    if (typeof window !== "undefined") {
+      window.location.assign("/profile");
+      return;
+    }
+
+    router.replace("/profile");
     router.refresh();
+  }
+
+  function switchAccount(email: string) {
+    reloadProfile(email);
   }
 
   function handleCreate(event: FormEvent<HTMLFormElement>) {
@@ -40,11 +51,14 @@ export function AccountPanel({
           username: formState.username.trim(),
           email: formState.email.trim(),
         });
-        setActiveUserEmail(user.email);
         setFormState({ username: "", email: "" });
-        router.refresh();
-      } catch {
-        setMessage("Could not create that account right now.");
+        reloadProfile(user.email);
+      } catch (createError) {
+        setMessage(
+          createError instanceof Error
+            ? createError.message
+            : "Could not create that account right now.",
+        );
       }
     });
   }

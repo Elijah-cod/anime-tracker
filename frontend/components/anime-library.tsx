@@ -19,10 +19,10 @@ export function AnimeLibrary({ items }: { items: AnimeNode[] }) {
       <div className="flex items-end justify-between gap-4">
         <div>
           <p className="text-xs uppercase tracking-[0.3em] text-slate-500 dark:text-slate-400">
-            Anime Library
+            Trending Now
           </p>
           <h2 className="mt-2 text-2xl font-semibold text-slate-950 dark:text-slate-50">
-            Responsive discovery grid
+            Fast discovery grid
           </h2>
         </div>
         <p className="max-w-sm text-right text-sm text-slate-600 dark:text-slate-300">

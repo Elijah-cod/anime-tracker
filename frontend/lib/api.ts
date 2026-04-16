@@ -2,6 +2,7 @@ import { mockCalendar, mockEntries, mockImportResponse, mockReviews, mockTrendin
 import {
   AnimeCalendarItem,
   AnimeEntry,
+  AnimeEntryCreatePayload,
   AnimeNode,
   ImportResponse,
   Review,
@@ -38,6 +39,25 @@ export async function getTrendingAnime(): Promise<AnimeNode[]> {
     return response.items;
   } catch {
     return mockTrending;
+  }
+}
+
+export async function searchAnime(query: string): Promise<AnimeNode[]> {
+  const trimmedQuery = query.trim();
+  if (!trimmedQuery) {
+    return [];
+  }
+
+  try {
+    const response = await fetchJson<{ items: AnimeNode[] }>(
+      `/anime/search?query=${encodeURIComponent(trimmedQuery)}&per_page=8`,
+    );
+    return response.items;
+  } catch {
+    return mockTrending.filter((item) => {
+      const haystack = `${item.title.romaji} ${item.title.english ?? ""}`.toLowerCase();
+      return haystack.includes(trimmedQuery.toLowerCase());
+    });
   }
 }
 
@@ -87,6 +107,38 @@ export async function incrementEpisodeProgress(entry: AnimeEntry): Promise<Anime
       ...entry,
       episodes_watched: entry.episodes_watched + 1,
     };
+  }
+}
+
+export async function createEntry(payload: AnimeEntryCreatePayload): Promise<AnimeEntry> {
+  try {
+    const response = await fetch(`${API_URL}/entries`, {
+      method: "POST",
+      headers: {
+        "Content-Type": "application/json",
+      },
+      body: JSON.stringify({
+        user_id: payload.user_id ?? 1,
+        episodes_watched: 0,
+        ...payload,
+      }),
+    });
+
+    if (!response.ok) {
+      throw new Error("Create entry request failed");
+    }
+
+    return normalizeEntry(await response.json());
+  } catch {
+    return normalizeEntry({
+      anime_id: payload.anime_id,
+      title: payload.title,
+      cover_image: payload.cover_image ?? null,
+      status: payload.status,
+      episodes_watched: payload.episodes_watched ?? 0,
+      total_episodes: payload.total_episodes ?? null,
+      score: payload.score ?? null,
+    });
   }
 }
 

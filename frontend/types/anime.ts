@@ -33,6 +33,17 @@ export type AnimeEntry = {
   score?: number | string | null;
 };
 
+export type AnimeEntryCreatePayload = {
+  user_id?: number;
+  anime_id: number;
+  title: string;
+  cover_image?: string | null;
+  status: string;
+  episodes_watched?: number;
+  total_episodes?: number | null;
+  score?: number | null;
+};
+
 export type Review = {
   id: number;
   user_id: number;

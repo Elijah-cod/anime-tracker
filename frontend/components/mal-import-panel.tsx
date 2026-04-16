@@ -6,7 +6,7 @@ import { FormEvent, useState, useTransition } from "react";
 import { importMalList } from "@/lib/api";
 import { ImportResponse } from "@/types/anime";
 
-export function MalImportPanel() {
+export function MalImportPanel({ activeUserEmail }: { activeUserEmail?: string }) {
   const [username, setUsername] = useState("");
   const [result, setResult] = useState<ImportResponse | null>(null);
   const [error, setError] = useState<string | null>(null);
@@ -23,7 +23,7 @@ export function MalImportPanel() {
 
     startTransition(async () => {
       try {
-        const imported = await importMalList(username.trim());
+        const imported = await importMalList(username.trim(), activeUserEmail);
         setResult(imported);
       } catch {
         setError("Import failed. Try again in a moment.");

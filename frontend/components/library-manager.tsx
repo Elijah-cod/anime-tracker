@@ -29,7 +29,13 @@ function sortEntries(entries: AnimeEntry[]) {
   });
 }
 
-export function LibraryManager({ entries }: { entries: AnimeEntry[] }) {
+export function LibraryManager({
+  entries,
+  activeUserEmail,
+}: {
+  entries: AnimeEntry[];
+  activeUserEmail?: string;
+}) {
   const [libraryEntries, setLibraryEntries] = useState(sortEntries(entries));
   const [filter, setFilter] = useState<StatusFilter>("ALL");
   const [drafts, setDrafts] = useState<DraftState>(
@@ -85,7 +91,7 @@ export function LibraryManager({ entries }: { entries: AnimeEntry[] }) {
         const updated = await updateEntry(entry.anime_id, {
           status: draft.status,
           score: Number.isNaN(scoreValue ?? NaN) ? null : scoreValue,
-        });
+        }, activeUserEmail);
         setLibraryEntries((current) =>
           sortEntries(current.map((item) => (item.anime_id === updated.anime_id ? updated : item))),
         );
@@ -111,7 +117,7 @@ export function LibraryManager({ entries }: { entries: AnimeEntry[] }) {
 
     startTransition(async () => {
       try {
-        await deleteEntry(entry.anime_id);
+        await deleteEntry(entry.anime_id, activeUserEmail);
         setLibraryEntries((current) =>
           current.filter((item) => item.anime_id !== entry.anime_id),
         );

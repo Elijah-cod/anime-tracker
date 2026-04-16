@@ -8,7 +8,13 @@ import { SafeImage } from "@/components/safe-image";
 import { createEntry, searchAnime } from "@/lib/api";
 import { AnimeEntry, AnimeNode } from "@/types/anime";
 
-export function DiscoverPanel({ entries }: { entries: AnimeEntry[] }) {
+export function DiscoverPanel({
+  entries,
+  activeUserEmail,
+}: {
+  entries: AnimeEntry[];
+  activeUserEmail?: string;
+}) {
   const router = useRouter();
   const [query, setQuery] = useState("");
   const deferredQuery = useDeferredValue(query);
@@ -53,7 +59,7 @@ export function DiscoverPanel({ entries }: { entries: AnimeEntry[] }) {
         status: "PLANNING",
         episodes_watched: 0,
         total_episodes: item.episodes ?? null,
-      });
+      }, activeUserEmail);
       setAddedIds((current) => [...current, item.id]);
       router.refresh();
     } catch {

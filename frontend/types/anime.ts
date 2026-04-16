@@ -100,3 +100,11 @@ export type LibrarySummary = {
   status_breakdown: AnimeEntryStatusCount[];
   watch_queue: AnimeEntry[];
 };
+
+export type User = {
+  id: number;
+  username: string;
+  email: string;
+  auth_provider: string;
+  created_at?: string | null;
+};

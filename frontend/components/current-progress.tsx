@@ -28,7 +28,13 @@ function formatScore(score: AnimeEntry["score"]): string {
   return `${numericScore.toFixed(1)} score`;
 }
 
-export function CurrentProgress({ entries }: { entries: AnimeEntry[] }) {
+export function CurrentProgress({
+  entries,
+  activeUserEmail,
+}: {
+  entries: AnimeEntry[];
+  activeUserEmail?: string;
+}) {
   const [baseEntries, setBaseEntries] = useState(entries);
   const [error, setError] = useState<string | null>(null);
   const [optimisticEntries, addOptimisticEntry] = useOptimistic(
@@ -47,7 +53,7 @@ export function CurrentProgress({ entries }: { entries: AnimeEntry[] }) {
 
     startTransition(async () => {
       try {
-        const updated = await incrementEpisodeProgress(entry);
+        const updated = await incrementEpisodeProgress(entry, activeUserEmail);
         setBaseEntries((current) =>
           current.map((item) => (item.anime_id === updated.anime_id ? updated : item)),
         );

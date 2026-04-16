@@ -26,9 +26,11 @@ function formatReviewDate(createdAt?: string | null) {
 export function ReviewsPanel({
   entries,
   initialReviews,
+  activeUserEmail,
 }: {
   entries: AnimeEntry[];
   initialReviews: Review[];
+  activeUserEmail?: string;
 }) {
   const defaultAnimeId = entries[0]?.anime_id ?? 0;
   const [selectedAnimeId, setSelectedAnimeId] = useState(defaultAnimeId);
@@ -80,7 +82,7 @@ export function ReviewsPanel({
           content: content.trim(),
           is_spoiler: isSpoiler,
           user_id: 1,
-        });
+        }, activeUserEmail);
         setReviews((current) => [created, ...current]);
         setContent("");
         setIsSpoiler(false);

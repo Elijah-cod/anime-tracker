@@ -1,7 +1,10 @@
 import Image from "next/image";
+import { cookies } from "next/headers";
 import { ArrowUpRight, Sparkles, Workflow } from "lucide-react";
 
+import { ACCOUNT_COOKIE_NAME, decodeActiveUserEmail } from "@/lib/account-session";
 import { AnimeLibrary } from "@/components/anime-library";
+import { SiteNav } from "@/components/site-nav";
 import { CurrentProgress } from "@/components/current-progress";
 import { DiscoverPanel } from "@/components/discover-panel";
 import { LibraryInsights } from "@/components/library-insights";
@@ -10,19 +13,32 @@ import { MalImportPanel } from "@/components/mal-import-panel";
 import { ReleaseCalendar } from "@/components/release-calendar";
 import { ReviewsPanel } from "@/components/reviews-panel";
 import { ThemeToggle } from "@/components/theme-toggle";
-import { getEntries, getLibrarySummary, getReleaseCalendar, getReviews, getTrendingAnime } from "@/lib/api";
+import {
+  getCurrentUser,
+  getEntries,
+  getLibrarySummary,
+  getReleaseCalendar,
+  getReviews,
+  getTrendingAnime,
+} from "@/lib/api";
 
 export default async function HomePage() {
-  const [trending, calendar, entries, reviews, summary] = await Promise.all([
+  const cookieStore = await cookies();
+  const activeUserEmail = decodeActiveUserEmail(cookieStore.get(ACCOUNT_COOKIE_NAME)?.value);
+
+  const [currentUser, trending, calendar, entries, reviews, summary] = await Promise.all([
+    getCurrentUser(activeUserEmail),
     getTrendingAnime(),
     getReleaseCalendar(),
-    getEntries(),
-    getReviews(),
-    getLibrarySummary(),
+    getEntries(activeUserEmail),
+    getReviews(activeUserEmail),
+    getLibrarySummary(activeUserEmail),
   ]);
 
   return (
     <main className="mx-auto flex min-h-screen w-full max-w-[1440px] flex-col gap-8 px-4 py-6 md:px-8 md:py-8">
+      <SiteNav currentPath="/" currentUser={currentUser} />
+
       <section className="overflow-hidden rounded-[2.25rem] border border-white/60 bg-white/70 p-6 shadow-card backdrop-blur dark:border-white/10 dark:bg-slate-950/70 md:p-8">
         <div className="flex flex-col gap-8 lg:flex-row lg:items-start lg:justify-between">
           <div className="max-w-3xl">
@@ -83,21 +99,25 @@ export default async function HomePage() {
       </section>
 
       <section className="grid gap-8 xl:grid-cols-[1.15fr_0.85fr]">
-        <CurrentProgress entries={entries} />
+        <CurrentProgress entries={entries} activeUserEmail={activeUserEmail} />
         <ReleaseCalendar items={calendar} />
       </section>
 
-      <DiscoverPanel entries={entries} />
+      <DiscoverPanel entries={entries} activeUserEmail={activeUserEmail} />
 
       <LibraryInsights summary={summary} />
 
-      <LibraryManager entries={entries} />
+      <LibraryManager entries={entries} activeUserEmail={activeUserEmail} />
 
       <AnimeLibrary items={trending} />
 
       <section className="grid gap-8 xl:grid-cols-[0.9fr_1.1fr]">
-        <MalImportPanel />
-        <ReviewsPanel entries={entries} initialReviews={reviews} />
+        <MalImportPanel activeUserEmail={activeUserEmail} />
+        <ReviewsPanel
+          entries={entries}
+          initialReviews={reviews}
+          activeUserEmail={activeUserEmail}
+        />
       </section>
 
       <section className="grid gap-6 md:grid-cols-2">

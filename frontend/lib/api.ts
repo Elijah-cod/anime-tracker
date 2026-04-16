@@ -10,6 +10,7 @@ import {
   LibrarySummary,
   Review,
   ReviewCreatePayload,
+  User,
 } from "@/types/anime";
 
 const API_URL = process.env.NEXT_PUBLIC_API_URL ?? "http://localhost:8000/api/v1";
@@ -24,9 +25,17 @@ function normalizeEntry(entry: AnimeEntry): AnimeEntry {
   };
 }
 
-async function fetchJson<T>(path: string): Promise<T> {
+function buildHeaders(userEmail?: string, headers?: HeadersInit): HeadersInit {
+  return {
+    ...(headers ?? {}),
+    ...(userEmail ? { "x-anime-tracker-user-email": userEmail } : {}),
+  };
+}
+
+async function fetchJson<T>(path: string, userEmail?: string): Promise<T> {
   const response = await fetch(`${API_URL}${path}`, {
     next: { revalidate: 300 },
+    headers: buildHeaders(userEmail),
   });
 
   if (!response.ok) {
@@ -75,9 +84,9 @@ export async function getReleaseCalendar(): Promise<AnimeCalendarItem[]> {
   }
 }
 
-export async function getEntries(): Promise<AnimeEntry[]> {
+export async function getEntries(userEmail?: string): Promise<AnimeEntry[]> {
   try {
-    const response = await fetchJson<{ items: AnimeEntry[] }>("/entries");
+    const response = await fetchJson<{ items: AnimeEntry[] }>("/entries", userEmail);
     return response.items.map(normalizeEntry);
   } catch {
     return mockEntries;
@@ -114,9 +123,9 @@ function buildSummary(entries: AnimeEntry[]): LibrarySummary {
   };
 }
 
-export async function getLibrarySummary(): Promise<LibrarySummary> {
+export async function getLibrarySummary(userEmail?: string): Promise<LibrarySummary> {
   try {
-    const response = await fetchJson<LibrarySummary>("/entries/summary");
+    const response = await fetchJson<LibrarySummary>("/entries/summary", userEmail);
     return {
       ...response,
       watch_queue: response.watch_queue.map(normalizeEntry),
@@ -126,13 +135,16 @@ export async function getLibrarySummary(): Promise<LibrarySummary> {
   }
 }
 
-export async function incrementEpisodeProgress(entry: AnimeEntry): Promise<AnimeEntry> {
+export async function incrementEpisodeProgress(
+  entry: AnimeEntry,
+  userEmail?: string,
+): Promise<AnimeEntry> {
   try {
     const response = await fetch(`${API_URL}/entries/${entry.anime_id}/progress`, {
       method: "PATCH",
-      headers: {
+      headers: buildHeaders(userEmail, {
         "Content-Type": "application/json",
-      },
+      }),
       body: JSON.stringify({
         ...entry,
         increment_by: 1,
@@ -155,13 +167,16 @@ export async function incrementEpisodeProgress(entry: AnimeEntry): Promise<Anime
   }
 }
 
-export async function createEntry(payload: AnimeEntryCreatePayload): Promise<AnimeEntry> {
+export async function createEntry(
+  payload: AnimeEntryCreatePayload,
+  userEmail?: string,
+): Promise<AnimeEntry> {
   try {
     const response = await fetch(`${API_URL}/entries`, {
       method: "POST",
-      headers: {
+      headers: buildHeaders(userEmail, {
         "Content-Type": "application/json",
-      },
+      }),
       body: JSON.stringify({
         user_id: payload.user_id ?? 1,
         episodes_watched: 0,
@@ -190,13 +205,14 @@ export async function createEntry(payload: AnimeEntryCreatePayload): Promise<Ani
 export async function updateEntry(
   animeId: number,
   payload: AnimeEntryUpdatePayload,
+  userEmail?: string,
 ): Promise<AnimeEntry> {
   try {
     const response = await fetch(`${API_URL}/entries/${animeId}`, {
       method: "PATCH",
-      headers: {
+      headers: buildHeaders(userEmail, {
         "Content-Type": "application/json",
-      },
+      }),
       body: JSON.stringify(payload),
     });
 
@@ -218,10 +234,11 @@ export async function updateEntry(
   }
 }
 
-export async function deleteEntry(animeId: number): Promise<void> {
+export async function deleteEntry(animeId: number, userEmail?: string): Promise<void> {
   try {
     const response = await fetch(`${API_URL}/entries/${animeId}`, {
       method: "DELETE",
+      headers: buildHeaders(userEmail),
     });
 
     if (!response.ok) {
@@ -232,22 +249,25 @@ export async function deleteEntry(animeId: number): Promise<void> {
   }
 }
 
-export async function getReviews(): Promise<Review[]> {
+export async function getReviews(userEmail?: string): Promise<Review[]> {
   try {
-    const response = await fetchJson<{ items: Review[] }>("/reviews");
+    const response = await fetchJson<{ items: Review[] }>("/reviews", userEmail);
     return response.items;
   } catch {
     return mockReviews;
   }
 }
 
-export async function createReview(payload: ReviewCreatePayload): Promise<Review> {
+export async function createReview(
+  payload: ReviewCreatePayload,
+  userEmail?: string,
+): Promise<Review> {
   try {
     const response = await fetch(`${API_URL}/reviews`, {
       method: "POST",
-      headers: {
+      headers: buildHeaders(userEmail, {
         "Content-Type": "application/json",
-      },
+      }),
       body: JSON.stringify(payload),
     });
 
@@ -270,13 +290,13 @@ export async function createReview(payload: ReviewCreatePayload): Promise<Review
   }
 }
 
-export async function importMalList(username: string): Promise<ImportResponse> {
+export async function importMalList(username: string, userEmail?: string): Promise<ImportResponse> {
   try {
     const response = await fetch(`${API_URL}/imports/mal`, {
       method: "POST",
-      headers: {
+      headers: buildHeaders(userEmail, {
         "Content-Type": "application/json",
-      },
+      }),
       body: JSON.stringify({
         username,
         user_id: 1,
@@ -295,6 +315,64 @@ export async function importMalList(username: string): Promise<ImportResponse> {
         ...item,
         title: `${item.title} (demo import for ${username})`,
       })),
+    };
+  }
+}
+
+export async function getUsers(userEmail?: string): Promise<User[]> {
+  try {
+    const response = await fetchJson<{ items: User[] }>("/users", userEmail);
+    return response.items;
+  } catch {
+    return [
+      {
+        id: 1,
+        username: "demo-user",
+        email: "demo@anime-tracker.local",
+        auth_provider: "demo",
+      },
+    ];
+  }
+}
+
+export async function getCurrentUser(userEmail?: string): Promise<User> {
+  try {
+    return await fetchJson<User>("/users/me", userEmail);
+  } catch {
+    return {
+      id: 1,
+      username: "demo-user",
+      email: userEmail ?? "demo@anime-tracker.local",
+      auth_provider: "demo",
+    };
+  }
+}
+
+export async function createUserAccount(
+  payload: { username: string; email: string },
+  userEmail?: string,
+): Promise<User> {
+  try {
+    const response = await fetch(`${API_URL}/users`, {
+      method: "POST",
+      headers: buildHeaders(userEmail, {
+        "Content-Type": "application/json",
+      }),
+      body: JSON.stringify(payload),
+    });
+
+    if (!response.ok) {
+      throw new Error("Create user request failed");
+    }
+
+    return response.json();
+  } catch {
+    return {
+      id: Date.now(),
+      username: payload.username,
+      email: payload.email.toLowerCase(),
+      auth_provider: "local",
+      created_at: new Date().toISOString(),
     };
   }
 }

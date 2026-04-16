@@ -1,0 +1,25 @@
+services:
+  - type: web
+    name: anime-tracker-api
+    env: python
+    rootDir: backend
+    plan: free
+    autoDeploy: true
+    buildCommand: pip install -e .
+    startCommand: uvicorn app.main:app --host 0.0.0.0 --port $PORT
+    healthCheckPath: /api/v1/health
+    envVars:
+      - key: PYTHON_VERSION
+        value: 3.11.11
+      - key: APP_ENV
+        value: production
+      - key: API_V1_PREFIX
+        value: /api/v1
+      - key: CACHE_TTL_SECONDS
+        value: 86400
+      - key: SEED_DEMO_DATA
+        value: false
+      - key: DATABASE_URL
+        sync: false
+      - key: ALLOW_ORIGINS
+        sync: false

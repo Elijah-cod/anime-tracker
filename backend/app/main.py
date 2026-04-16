@@ -4,6 +4,10 @@ from fastapi.middleware.cors import CORSMiddleware
 from app.api.router import api_router
 from app.core.config import get_settings
 from app.core.cache import TrendingAnimeCache
+from app.db.base import Base
+from app.db.bootstrap import seed_demo_data
+from app.db.session import SessionLocal, engine
+from app.models import anime_entry, review, user  # noqa: F401
 
 settings = get_settings()
 
@@ -25,6 +29,9 @@ app.add_middleware(
 @app.on_event("startup")
 async def startup_event() -> None:
     app.state.trending_cache = TrendingAnimeCache(ttl_seconds=settings.cache_ttl_seconds)
+    Base.metadata.create_all(bind=engine)
+    with SessionLocal() as session:
+        seed_demo_data(session)
 
 
 @app.get("/", tags=["meta"])

@@ -1,5 +1,12 @@
-import { mockCalendar, mockEntries, mockTrending } from "@/lib/mock-data";
-import { AnimeCalendarItem, AnimeEntry, AnimeNode } from "@/types/anime";
+import { mockCalendar, mockEntries, mockImportResponse, mockReviews, mockTrending } from "@/lib/mock-data";
+import {
+  AnimeCalendarItem,
+  AnimeEntry,
+  AnimeNode,
+  ImportResponse,
+  Review,
+  ReviewCreatePayload,
+} from "@/types/anime";
 
 const API_URL = process.env.NEXT_PUBLIC_API_URL ?? "http://localhost:8000/api/v1";
 
@@ -79,6 +86,73 @@ export async function incrementEpisodeProgress(entry: AnimeEntry): Promise<Anime
     return {
       ...entry,
       episodes_watched: entry.episodes_watched + 1,
+    };
+  }
+}
+
+export async function getReviews(): Promise<Review[]> {
+  try {
+    const response = await fetchJson<{ items: Review[] }>("/reviews");
+    return response.items;
+  } catch {
+    return mockReviews;
+  }
+}
+
+export async function createReview(payload: ReviewCreatePayload): Promise<Review> {
+  try {
+    const response = await fetch(`${API_URL}/reviews`, {
+      method: "POST",
+      headers: {
+        "Content-Type": "application/json",
+      },
+      body: JSON.stringify(payload),
+    });
+
+    if (!response.ok) {
+      throw new Error("Review request failed");
+    }
+
+    return response.json();
+  } catch {
+    return {
+      id: Date.now(),
+      user_id: payload.user_id ?? 1,
+      anime_id: payload.anime_id,
+      anime_title: payload.anime_title ?? "Untitled anime",
+      cover_image: payload.cover_image ?? null,
+      content: payload.content,
+      is_spoiler: payload.is_spoiler ?? false,
+      created_at: new Date().toISOString(),
+    };
+  }
+}
+
+export async function importMalList(username: string): Promise<ImportResponse> {
+  try {
+    const response = await fetch(`${API_URL}/imports/mal`, {
+      method: "POST",
+      headers: {
+        "Content-Type": "application/json",
+      },
+      body: JSON.stringify({
+        username,
+        user_id: 1,
+      }),
+    });
+
+    if (!response.ok) {
+      throw new Error("Import request failed");
+    }
+
+    return response.json();
+  } catch {
+    return {
+      ...mockImportResponse,
+      items: mockImportResponse.items.map((item) => ({
+        ...item,
+        title: `${item.title} (demo import for ${username})`,
+      })),
     };
   }
 }

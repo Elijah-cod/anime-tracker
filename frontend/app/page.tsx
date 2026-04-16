@@ -3,15 +3,18 @@ import { ArrowUpRight, Sparkles, Workflow } from "lucide-react";
 
 import { AnimeLibrary } from "@/components/anime-library";
 import { CurrentProgress } from "@/components/current-progress";
+import { MalImportPanel } from "@/components/mal-import-panel";
 import { ReleaseCalendar } from "@/components/release-calendar";
+import { ReviewsPanel } from "@/components/reviews-panel";
 import { ThemeToggle } from "@/components/theme-toggle";
-import { getEntries, getReleaseCalendar, getTrendingAnime } from "@/lib/api";
+import { getEntries, getReleaseCalendar, getReviews, getTrendingAnime } from "@/lib/api";
 
 export default async function HomePage() {
-  const [trending, calendar, entries] = await Promise.all([
+  const [trending, calendar, entries, reviews] = await Promise.all([
     getTrendingAnime(),
     getReleaseCalendar(),
     getEntries(),
+    getReviews(),
   ]);
 
   return (
@@ -81,6 +84,11 @@ export default async function HomePage() {
       </section>
 
       <AnimeLibrary items={trending} />
+
+      <section className="grid gap-8 xl:grid-cols-[0.9fr_1.1fr]">
+        <MalImportPanel />
+        <ReviewsPanel entries={entries} initialReviews={reviews} />
+      </section>
 
       <section className="grid gap-6 md:grid-cols-2">
         <article className="rounded-[2rem] border border-slate-200/80 bg-white/85 p-6 shadow-card backdrop-blur dark:border-slate-800 dark:bg-slate-950/80">

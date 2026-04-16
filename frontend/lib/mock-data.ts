@@ -1,4 +1,4 @@
-import { AnimeCalendarItem, AnimeEntry, AnimeNode } from "@/types/anime";
+import { AnimeCalendarItem, AnimeEntry, AnimeNode, ImportResponse, Review } from "@/types/anime";
 
 const livePoster = (animeId: number) => `/api/poster/${animeId}`;
 
@@ -73,3 +73,50 @@ export const mockEntries: AnimeEntry[] = [
     score: 9.2,
   },
 ];
+
+export const mockReviews: Review[] = [
+  {
+    id: 1,
+    user_id: 1,
+    anime_id: 16498,
+    anime_title: "Attack on Titan",
+    cover_image: livePoster(16498),
+    content: "Still one of the best pacing curves in anime. Every episode lands.",
+    is_spoiler: false,
+    created_at: "2026-04-16T08:00:00.000Z",
+  },
+  {
+    id: 2,
+    user_id: 1,
+    anime_id: 1535,
+    anime_title: "Death Note",
+    cover_image: livePoster(1535),
+    content: "A classic cat-and-mouse thriller with a very rewatchable first half.",
+    is_spoiler: false,
+    created_at: "2026-04-15T16:30:00.000Z",
+  },
+];
+
+export const mockImportResponse: ImportResponse = {
+  imported_count: 3,
+  items: [
+    {
+      anime_id: 16498,
+      title: "Attack on Titan",
+      status: "WATCHING",
+      episodes_watched: 18,
+    },
+    {
+      anime_id: 21,
+      title: "One Piece",
+      status: "WATCHING",
+      episodes_watched: 1091,
+    },
+    {
+      anime_id: 1535,
+      title: "Death Note",
+      status: "COMPLETED",
+      episodes_watched: 37,
+    },
+  ],
+};

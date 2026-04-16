@@ -32,3 +32,35 @@ export type AnimeEntry = {
   total_episodes?: number | null;
   score?: number | string | null;
 };
+
+export type Review = {
+  id: number;
+  user_id: number;
+  anime_id: number;
+  anime_title?: string | null;
+  cover_image?: string | null;
+  content: string;
+  is_spoiler: boolean;
+  created_at?: string | null;
+};
+
+export type ReviewCreatePayload = {
+  user_id?: number;
+  anime_id: number;
+  anime_title?: string | null;
+  cover_image?: string | null;
+  content: string;
+  is_spoiler?: boolean;
+};
+
+export type ImportedEntry = {
+  anime_id: number;
+  title: string;
+  status: string;
+  episodes_watched: number;
+};
+
+export type ImportResponse = {
+  imported_count: number;
+  items: ImportedEntry[];
+};

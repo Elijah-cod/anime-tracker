@@ -2,7 +2,7 @@
 
 import Link from "next/link";
 import { MessageSquareQuote } from "lucide-react";
-import { FormEvent, useOptimistic, useState, useTransition } from "react";
+import { FormEvent, useEffect, useMemo, useOptimistic, useState, useTransition } from "react";
 
 import { SafeImage } from "@/components/safe-image";
 import { createReview } from "@/lib/api";
@@ -55,6 +55,28 @@ export function ReviewsPanel({
 
   const selectedEntry = entries.find((entry) => entry.anime_id === selectedAnimeId) ?? entries[0];
   const hasEntries = entries.length > 0;
+  const visibleReviews = useMemo(
+    () =>
+      optimisticReviews.filter((review) =>
+        selectedAnimeId ? review.anime_id === selectedAnimeId : true,
+      ),
+    [optimisticReviews, selectedAnimeId],
+  );
+
+  useEffect(() => {
+    setReviews(initialReviews);
+  }, [initialReviews]);
+
+  useEffect(() => {
+    if (!entries.length) {
+      setSelectedAnimeId(0);
+      return;
+    }
+
+    if (!entries.some((entry) => entry.anime_id === selectedAnimeId)) {
+      setSelectedAnimeId(entries[0].anime_id);
+    }
+  }, [entries, selectedAnimeId]);
 
   function handleSubmit(event: FormEvent<HTMLFormElement>) {
     event.preventDefault();
@@ -78,10 +100,13 @@ export function ReviewsPanel({
       cover_image: selectedEntry.cover_image ?? null,
       content: content.trim(),
       is_spoiler: isSpoiler,
+      username: "You",
       created_at: new Date().toISOString(),
     };
 
-    addOptimisticReview(optimisticReview);
+    startTransition(() => {
+      addOptimisticReview(optimisticReview);
+    });
 
     startTransition(async () => {
       try {
@@ -198,8 +223,18 @@ export function ReviewsPanel({
         <p className="mt-4 text-sm text-rose-600 dark:text-rose-300">{error}</p>
       ) : null}
 
+      {hasEntries ? (
+        <p className="mt-4 text-sm text-slate-500 dark:text-slate-400">
+          Showing {visibleReviews.length} comment{visibleReviews.length === 1 ? "" : "s"} for{" "}
+          <span className="font-semibold text-slate-950 dark:text-slate-50">
+            {selectedEntry?.title}
+          </span>
+          .
+        </p>
+      ) : null}
+
       <div className="mt-6 space-y-4">
-        {optimisticReviews.map((review) => (
+        {visibleReviews.map((review) => (
           <article
             key={review.id}
             className="grid gap-4 rounded-3xl border border-slate-200/70 bg-slate-50/80 p-4 dark:border-slate-800 dark:bg-slate-900/80 md:grid-cols-[72px_1fr]"
@@ -218,6 +253,11 @@ export function ReviewsPanel({
                 <h3 className="text-base font-semibold text-slate-950 dark:text-slate-50">
                   {review.anime_title ?? `Anime #${review.anime_id}`}
                 </h3>
+                {review.username ? (
+                  <span className="text-xs font-semibold uppercase tracking-[0.2em] text-slate-500 dark:text-slate-400">
+                    {review.username}
+                  </span>
+                ) : null}
                 {review.is_spoiler ? (
                   <span className="rounded-full bg-rose-100 px-3 py-1 text-xs font-semibold text-rose-700 dark:bg-rose-500/10 dark:text-rose-200">
                     Spoiler

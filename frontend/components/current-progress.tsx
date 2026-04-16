@@ -1,7 +1,7 @@
 "use client";
 
 import Link from "next/link";
-import { startTransition, useOptimistic, useState } from "react";
+import { startTransition, useEffect, useOptimistic, useState } from "react";
 
 import { SafeImage } from "@/components/safe-image";
 import { incrementEpisodeProgress } from "@/lib/api";
@@ -48,6 +48,10 @@ export function CurrentProgress({
       ),
   );
   const watchEntries = optimisticEntries.filter((entry) => entry.status === "WATCHING");
+
+  useEffect(() => {
+    setBaseEntries(entries);
+  }, [entries]);
 
   async function handleAdvance(entry: AnimeEntry) {
     setError(null);

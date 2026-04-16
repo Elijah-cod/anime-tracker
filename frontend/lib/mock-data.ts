@@ -83,6 +83,7 @@ export const mockReviews: Review[] = [
     cover_image: livePoster(16498),
     content: "Still one of the best pacing curves in anime. Every episode lands.",
     is_spoiler: false,
+    username: "demo-user",
     created_at: "2026-04-16T08:00:00.000Z",
   },
   {
@@ -93,7 +94,19 @@ export const mockReviews: Review[] = [
     cover_image: livePoster(1535),
     content: "A classic cat-and-mouse thriller with a very rewatchable first half.",
     is_spoiler: false,
+    username: "demo-user",
     created_at: "2026-04-15T16:30:00.000Z",
+  },
+  {
+    id: 3,
+    user_id: 2,
+    anime_id: 16498,
+    anime_title: "Attack on Titan",
+    cover_image: livePoster(16498),
+    content: "The tension build-up is unreal. Every arc escalates cleanly.",
+    is_spoiler: false,
+    username: "mikasa-notes",
+    created_at: "2026-04-14T12:10:00.000Z",
   },
 ];
 

@@ -25,7 +25,7 @@ export default async function ProfilePage() {
     getCurrentUser(activeUserEmail),
     getUsers(activeUserEmail),
     getEntries(activeUserEmail),
-    getReviews(activeUserEmail),
+    getReviews(activeUserEmail, { scope: "mine" }),
     getLibrarySummary(activeUserEmail),
     getUserDashboard(activeUserEmail),
   ]);

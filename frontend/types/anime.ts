@@ -61,6 +61,7 @@ export type Review = {
   cover_image?: string | null;
   content: string;
   is_spoiler: boolean;
+  username?: string | null;
   created_at?: string | null;
 };
 

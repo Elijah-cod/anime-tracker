@@ -17,6 +17,12 @@ import {
 
 const API_URL = process.env.NEXT_PUBLIC_API_URL ?? "http://localhost:8000/api/v1";
 
+type FetchJsonOptions = {
+  userEmail?: string;
+  revalidate?: number;
+  noStore?: boolean;
+};
+
 function normalizeEntry(entry: AnimeEntry): AnimeEntry {
   const parsedScore =
     typeof entry.score === "string" ? Number.parseFloat(entry.score) : entry.score;
@@ -34,10 +40,12 @@ function buildHeaders(userEmail?: string, headers?: HeadersInit): HeadersInit {
   };
 }
 
-async function fetchJson<T>(path: string, userEmail?: string): Promise<T> {
+async function fetchJson<T>(path: string, options?: FetchJsonOptions): Promise<T> {
   const response = await fetch(`${API_URL}${path}`, {
-    next: { revalidate: 300 },
-    headers: buildHeaders(userEmail),
+    ...(options?.noStore
+      ? { cache: "no-store" as const }
+      : { next: { revalidate: options?.revalidate ?? 300 } }),
+    headers: buildHeaders(options?.userEmail),
   });
 
   if (!response.ok) {
@@ -88,7 +96,10 @@ export async function getReleaseCalendar(): Promise<AnimeCalendarItem[]> {
 
 export async function getEntries(userEmail?: string): Promise<AnimeEntry[]> {
   try {
-    const response = await fetchJson<{ items: AnimeEntry[] }>("/entries", userEmail);
+    const response = await fetchJson<{ items: AnimeEntry[] }>("/entries", {
+      userEmail,
+      noStore: true,
+    });
     return response.items.map(normalizeEntry);
   } catch {
     return mockEntries;
@@ -127,7 +138,10 @@ function buildSummary(entries: AnimeEntry[]): LibrarySummary {
 
 export async function getLibrarySummary(userEmail?: string): Promise<LibrarySummary> {
   try {
-    const response = await fetchJson<LibrarySummary>("/entries/summary", userEmail);
+    const response = await fetchJson<LibrarySummary>("/entries/summary", {
+      userEmail,
+      noStore: true,
+    });
     return {
       ...response,
       watch_queue: response.watch_queue.map(normalizeEntry),
@@ -251,9 +265,26 @@ export async function deleteEntry(animeId: number, userEmail?: string): Promise<
   }
 }
 
-export async function getReviews(userEmail?: string): Promise<Review[]> {
+export async function getReviews(
+  userEmail?: string,
+  options?: { scope?: "mine" | "all"; animeId?: number },
+): Promise<Review[]> {
   try {
-    const response = await fetchJson<{ items: Review[] }>("/reviews", userEmail);
+    const searchParams = new URLSearchParams();
+    if (options?.scope) {
+      searchParams.set("scope", options.scope);
+    }
+    if (options?.animeId) {
+      searchParams.set("anime_id", String(options.animeId));
+    }
+    const query = searchParams.toString();
+    const response = await fetchJson<{ items: Review[] }>(
+      `/reviews${query ? `?${query}` : ""}`,
+      {
+        userEmail,
+        noStore: true,
+      },
+    );
     return response.items;
   } catch {
     return mockReviews;
@@ -323,7 +354,10 @@ export async function importMalList(username: string, userEmail?: string): Promi
 
 export async function getUsers(userEmail?: string): Promise<User[]> {
   try {
-    const response = await fetchJson<{ items: User[] }>("/users", userEmail);
+    const response = await fetchJson<{ items: User[] }>("/users", {
+      userEmail,
+      noStore: true,
+    });
     return response.items;
   } catch {
     return [
@@ -339,7 +373,10 @@ export async function getUsers(userEmail?: string): Promise<User[]> {
 
 export async function getCurrentUser(userEmail?: string): Promise<User> {
   try {
-    return await fetchJson<User>("/users/me", userEmail);
+    return await fetchJson<User>("/users/me", {
+      userEmail,
+      noStore: true,
+    });
   } catch {
     return {
       id: 1,
@@ -429,7 +466,10 @@ function buildUserDashboardFallback(userEmail?: string): UserDashboard {
 
 export async function getUserDashboard(userEmail?: string): Promise<UserDashboard> {
   try {
-    return await fetchJson<UserDashboard>("/users/me/dashboard", userEmail);
+    return await fetchJson<UserDashboard>("/users/me/dashboard", {
+      userEmail,
+      noStore: true,
+    });
   } catch {
     return buildUserDashboardFallback(userEmail);
   }

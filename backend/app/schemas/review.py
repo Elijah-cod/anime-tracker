@@ -15,6 +15,7 @@ class ReviewCreate(BaseModel):
 
 class ReviewRead(ReviewCreate):
     id: int
+    username: Optional[str] = None
     created_at: Optional[datetime] = None
 
 

@@ -32,7 +32,7 @@ export default async function HomePage() {
     getTrendingAnime(),
     getReleaseCalendar(),
     getEntries(activeUserEmail),
-    getReviews(activeUserEmail),
+    getReviews(activeUserEmail, { scope: "all" }),
     getLibrarySummary(activeUserEmail),
   ]);
 

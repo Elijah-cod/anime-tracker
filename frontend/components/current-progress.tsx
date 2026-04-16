@@ -64,7 +64,7 @@ export function CurrentProgress({
           current.map((item) => (item.anime_id === updated.anime_id ? updated : item)),
         );
       } catch {
-        setError("Could not sync progress right now. The UI stayed optimistic.");
+        setError("Could not sync progress right now.");
       }
     });
   }
@@ -79,9 +79,6 @@ export function CurrentProgress({
           <h2 className="mt-2 text-2xl font-semibold text-slate-950 dark:text-slate-50">
             One-click episode tracking
           </h2>
-        </div>
-        <div className="rounded-full border border-orange-300/70 bg-orange-100/80 px-4 py-2 text-sm font-medium text-orange-700 dark:border-orange-500/30 dark:bg-orange-500/10 dark:text-orange-200">
-          Optimistic UI
         </div>
       </div>
 

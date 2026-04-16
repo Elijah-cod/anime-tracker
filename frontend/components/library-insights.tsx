@@ -69,7 +69,7 @@ export function LibraryInsights({ summary }: { summary: LibrarySummary }) {
         })}
       </div>
 
-      <div className="mt-6 grid gap-6 lg:grid-cols-[320px_minmax(0,1fr)]">
+      <div className="mt-6 grid gap-6 xl:grid-cols-[320px_minmax(0,1fr)]">
         <article className="rounded-[1.75rem] border border-slate-200 bg-slate-50/80 p-5 dark:border-slate-800 dark:bg-slate-900/80">
           <div className="flex items-center gap-2 text-sm font-semibold text-slate-700 dark:text-slate-200">
             <CheckCircle2 className="h-4 w-4" />
@@ -119,21 +119,21 @@ export function LibraryInsights({ summary }: { summary: LibrarySummary }) {
             <Clock3 className="h-4 w-4" />
             Up next
           </div>
-          <div className="mt-4 grid gap-4 xl:grid-cols-2">
+          <div className="mt-4 grid gap-4 2xl:grid-cols-2">
             {summary.watch_queue.map((entry) => (
               <article
                 key={entry.anime_id}
-                className="grid gap-4 rounded-3xl border border-slate-200/70 bg-white/80 p-4 dark:border-slate-800 dark:bg-slate-950/80 sm:grid-cols-[88px_1fr]"
+                className="grid grid-cols-[88px_minmax(0,1fr)] items-start gap-4 rounded-3xl border border-slate-200/70 bg-white/80 p-4 dark:border-slate-800 dark:bg-slate-950/80"
               >
                 <div className="relative h-[112px] overflow-hidden rounded-2xl">
                   <SafeImage src={entry.cover_image} alt={entry.title} fill className="object-cover" />
                 </div>
                 <div className="min-w-0">
-                  <div className="flex flex-wrap items-center gap-2">
+                  <div className="space-y-3">
                     <h3 className="text-lg font-semibold leading-7 text-slate-950 dark:text-slate-50">
                       {entry.title}
                     </h3>
-                    <div className="rounded-full bg-slate-950 px-3 py-1 text-xs font-semibold uppercase tracking-[0.18em] text-white dark:bg-sky-500 dark:text-slate-950">
+                    <div className="inline-flex rounded-full bg-slate-950 px-3 py-1 text-xs font-semibold uppercase tracking-[0.18em] text-white dark:bg-sky-500 dark:text-slate-950">
                       {prettyStatus(entry.status)}
                     </div>
                   </div>

@@ -49,10 +49,9 @@ export default async function ProfilePage() {
 
       <ProfileOverview currentUser={currentUser} dashboard={dashboard} />
 
-      <section className="grid gap-8 xl:grid-cols-[0.9fr_1.1fr]">
-        <AccountPanel currentUser={currentUser} users={users} />
-        <LibraryInsights summary={summary} />
-      </section>
+      <AccountPanel currentUser={currentUser} users={users} />
+
+      <LibraryInsights summary={summary} />
 
       <ActivityTimeline items={dashboard.recent_activity} />
 

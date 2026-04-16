@@ -6,6 +6,7 @@ import { FormEvent, useState, useTransition } from "react";
 
 import { setActiveUserEmail } from "@/lib/account-session";
 import { createUserAccount } from "@/lib/api";
+import { getPrivateUserHint, getPublicUserMeta } from "@/lib/user-privacy";
 import { User } from "@/types/anime";
 
 export function AccountPanel({
@@ -84,12 +85,15 @@ export function AccountPanel({
         <p className="mt-2 text-lg font-semibold text-slate-950 dark:text-slate-50">
           {currentUser.username}
         </p>
-        <p className="mt-1 text-sm text-slate-500 dark:text-slate-400">{currentUser.email}</p>
+        <p className="mt-1 text-sm text-slate-500 dark:text-slate-400">
+          {getPublicUserMeta(currentUser) ?? getPrivateUserHint(currentUser)}
+        </p>
       </div>
 
       <div className="mt-6 space-y-3">
         {users.map((user) => {
           const isActive = user.email === currentUser.email;
+          const publicMeta = getPublicUserMeta(user);
           return (
             <button
               key={user.id}
@@ -103,7 +107,9 @@ export function AccountPanel({
             >
               <div>
                 <p className="font-semibold text-slate-950 dark:text-slate-50">{user.username}</p>
-                <p className="mt-1 text-sm text-slate-500 dark:text-slate-400">{user.email}</p>
+                <p className="mt-1 text-sm text-slate-500 dark:text-slate-400">
+                  {publicMeta ?? getPrivateUserHint(user)}
+                </p>
               </div>
               <span className="rounded-full bg-slate-950 px-3 py-1 text-xs font-semibold uppercase tracking-[0.18em] text-white dark:bg-white dark:text-slate-950">
                 {isActive ? "Active" : user.auth_provider}

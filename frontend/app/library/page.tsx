@@ -11,15 +11,19 @@ export default async function LibraryPage() {
   const cookieStore = await cookies();
   const activeUserEmail = decodeActiveUserEmail(cookieStore.get(ACCOUNT_COOKIE_NAME)?.value);
 
-  const [currentUser, entries, summary] = await Promise.all([
-    getCurrentUser(activeUserEmail),
+  if (!activeUserEmail) {
+    redirect("/auth");
+  }
+
+  const currentUser = await getCurrentUser(activeUserEmail);
+  if (currentUser.email !== activeUserEmail) {
+    redirect("/auth");
+  }
+
+  const [entries, summary] = await Promise.all([
     getEntries(activeUserEmail),
     getLibrarySummary(activeUserEmail),
   ]);
-
-  if (!activeUserEmail || currentUser.email !== activeUserEmail) {
-    redirect("/auth");
-  }
 
   return (
     <main className="mx-auto flex min-h-screen w-full max-w-[1440px] flex-col gap-8 px-4 py-6 md:px-8 md:py-8">

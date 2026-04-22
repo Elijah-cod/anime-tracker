@@ -21,18 +21,22 @@ export default async function ProfilePage() {
   const cookieStore = await cookies();
   const activeUserEmail = decodeActiveUserEmail(cookieStore.get(ACCOUNT_COOKIE_NAME)?.value);
 
-  const [currentUser, users, entries, reviews, summary, dashboard] = await Promise.all([
-    getCurrentUser(activeUserEmail),
+  if (!activeUserEmail) {
+    redirect("/auth");
+  }
+
+  const currentUser = await getCurrentUser(activeUserEmail);
+  if (currentUser.email !== activeUserEmail) {
+    redirect("/auth");
+  }
+
+  const [users, entries, reviews, summary, dashboard] = await Promise.all([
     getUsers(activeUserEmail),
     getEntries(activeUserEmail),
     getReviews(activeUserEmail, { scope: "mine" }),
     getLibrarySummary(activeUserEmail),
     getUserDashboard(activeUserEmail),
   ]);
-
-  if (!activeUserEmail || currentUser.email !== activeUserEmail) {
-    redirect("/auth");
-  }
 
   return (
     <main className="mx-auto flex min-h-screen w-full max-w-[1440px] flex-col gap-8 px-4 py-6 md:px-8 md:py-8">

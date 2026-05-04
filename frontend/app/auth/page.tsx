@@ -4,7 +4,7 @@ import { redirect } from "next/navigation";
 
 import { AuthPanel } from "@/components/auth-panel";
 import { decodeActiveUserEmail, ACCOUNT_COOKIE_NAME } from "@/lib/account-session";
-import { getCurrentUser, getUsers } from "@/lib/api";
+import { getCurrentUser } from "@/lib/api";
 
 export default async function AuthPage() {
   const cookieStore = await cookies();
@@ -16,8 +16,6 @@ export default async function AuthPage() {
       redirect("/");
     }
   }
-
-  const users = await getUsers();
 
   return (
     <main className="mx-auto flex min-h-screen w-full max-w-[1440px] flex-col gap-8 px-4 py-6 md:px-8 md:py-8">
@@ -52,7 +50,7 @@ export default async function AuthPage() {
         </div>
       </section>
 
-      <AuthPanel users={users} />
+      <AuthPanel />
     </main>
   );
 }

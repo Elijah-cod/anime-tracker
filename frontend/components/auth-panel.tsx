@@ -2,18 +2,47 @@
 
 import { ArrowRight, LoaderCircle, ShieldCheck, UserPlus } from "lucide-react";
 import { useRouter } from "next/navigation";
-import { FormEvent, useState, useTransition } from "react";
+import { FormEvent, useEffect, useState, useTransition } from "react";
 
 import { setActiveUserEmail } from "@/lib/account-session";
-import { createUserAccount } from "@/lib/api";
+import { createUserAccount, getUsers } from "@/lib/api";
 import { getPrivateUserHint, getPublicUserMeta } from "@/lib/user-privacy";
 import { User } from "@/types/anime";
 
-export function AuthPanel({ users }: { users: User[] }) {
+export function AuthPanel({ initialUsers = [] }: { initialUsers?: User[] }) {
   const router = useRouter();
+  const [users, setUsers] = useState<User[]>(initialUsers);
+  const [usersLoading, setUsersLoading] = useState(initialUsers.length === 0);
   const [formState, setFormState] = useState({ username: "", email: "" });
   const [message, setMessage] = useState<string | null>(null);
   const [isPending, startTransition] = useTransition();
+
+  useEffect(() => {
+    let isMounted = true;
+
+    async function loadUsers() {
+      try {
+        const nextUsers = await getUsers();
+        if (isMounted) {
+          setUsers(nextUsers);
+        }
+      } finally {
+        if (isMounted) {
+          setUsersLoading(false);
+        }
+      }
+    }
+
+    if (!initialUsers.length) {
+      void loadUsers();
+    } else {
+      setUsersLoading(false);
+    }
+
+    return () => {
+      isMounted = false;
+    };
+  }, [initialUsers]);
 
   function enterDashboard(email: string) {
     setActiveUserEmail(email);
@@ -78,6 +107,12 @@ export function AuthPanel({ users }: { users: User[] }) {
         </div>
 
         <div className="mt-6 space-y-3">
+          {usersLoading ? (
+            <div className="rounded-3xl border border-slate-200 bg-slate-50/80 px-4 py-4 text-sm text-slate-500 dark:border-slate-800 dark:bg-slate-900/80 dark:text-slate-400">
+              Loading profiles...
+            </div>
+          ) : null}
+
           {users.map((user) => {
             const publicMeta = getPublicUserMeta(user);
 
@@ -106,6 +141,12 @@ export function AuthPanel({ users }: { users: User[] }) {
               </button>
             );
           })}
+
+          {!usersLoading && !users.length ? (
+            <div className="rounded-3xl border border-dashed border-slate-300 bg-slate-50/80 px-4 py-4 text-sm text-slate-500 dark:border-slate-700 dark:bg-slate-900/80 dark:text-slate-400">
+              No profiles yet. Create the first account to get started.
+            </div>
+          ) : null}
         </div>
       </div>
 

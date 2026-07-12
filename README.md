@@ -81,7 +81,7 @@ Anime Tracker is designed around two ideas:
 
 ### Frontend
 
-The frontend lives in [`frontend`](/Users/elijah/Documents/Projects/anime-tracker/frontend) and uses the Next.js App Router.
+The frontend lives in [`frontend`](frontend) and uses the Next.js App Router.
 
 Key responsibilities:
 
@@ -93,18 +93,18 @@ Key responsibilities:
 
 Key frontend areas:
 
-- [`frontend/app`](/Users/elijah/Documents/Projects/anime-tracker/frontend/app)
+- [`frontend/app`](frontend/app)
   App routes and page entry points
 
-- [`frontend/components`](/Users/elijah/Documents/Projects/anime-tracker/frontend/components)
+- [`frontend/components`](frontend/components)
   Reusable panels, cards, navigation, comments, library editing, and activity UI
 
-- [`frontend/lib`](/Users/elijah/Documents/Projects/anime-tracker/frontend/lib)
+- [`frontend/lib`](frontend/lib)
   API client, session helpers, mock fallback data, and image helpers
 
 ### Backend
 
-The backend lives in [`backend`](/Users/elijah/Documents/Projects/anime-tracker/backend) and exposes a REST API on top of:
+The backend lives in [`backend`](backend) and exposes a REST API on top of:
 
 - AniList GraphQL service wrappers
 - MAL/Jikan import sync logic
@@ -113,16 +113,16 @@ The backend lives in [`backend`](/Users/elijah/Documents/Projects/anime-tracker/
 
 Key backend areas:
 
-- [`backend/app/api`](/Users/elijah/Documents/Projects/anime-tracker/backend/app/api)
+- [`backend/app/api`](backend/app/api)
   Route handlers and request dependencies
 
-- [`backend/app/models`](/Users/elijah/Documents/Projects/anime-tracker/backend/app/models)
+- [`backend/app/models`](backend/app/models)
   SQLAlchemy models for users, anime entries, and comments
 
-- [`backend/app/services`](/Users/elijah/Documents/Projects/anime-tracker/backend/app/services)
+- [`backend/app/services`](backend/app/services)
   AniList, Jikan, and import orchestration
 
-- [`backend/app/schemas`](/Users/elijah/Documents/Projects/anime-tracker/backend/app/schemas)
+- [`backend/app/schemas`](backend/app/schemas)
   Pydantic request and response models
 
 ## Data Model
@@ -303,7 +303,7 @@ The app will run at:
 
 ### Frontend
 
-Defined in [`frontend/.env.example`](/Users/elijah/Documents/Projects/anime-tracker/frontend/.env.example:1)
+Defined in [`frontend/.env.example`](frontend/.env.example).
 
 - `NEXT_PUBLIC_API_URL`
   Backend base URL including `/api/v1`
@@ -316,7 +316,7 @@ NEXT_PUBLIC_API_URL=http://localhost:8000/api/v1
 
 ### Backend
 
-Defined in [`backend/.env.example`](/Users/elijah/Documents/Projects/anime-tracker/backend/.env.example:1)
+Defined in [`backend/.env.example`](backend/.env.example).
 
 - `APP_NAME`
 - `APP_ENV`
@@ -406,7 +406,7 @@ NEXT_PUBLIC_API_URL=https://your-backend-domain.example.com/api/v1
 
 ## Render
 
-This repository includes a backend blueprint at [render.yaml](/Users/elijah/Documents/Projects/anime-tracker/render.yaml:1).
+This repository includes a backend blueprint at [`render.yaml`](render.yaml).
 
 Backend service settings:
 
@@ -429,7 +429,7 @@ Notes:
 
 ## Railway
 
-This repository includes a root [Procfile](/Users/elijah/Documents/Projects/anime-tracker/Procfile:1) for Railway-style process startup.
+This repository includes a root [`Procfile`](Procfile) for Railway-style process startup.
 
 Equivalent start command:
 

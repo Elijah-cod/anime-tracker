@@ -54,10 +54,11 @@ export default async function HomePage() {
             <div className="inline-flex items-center gap-4 rounded-full border border-white/70 bg-white/70 px-4 py-3 shadow-sm backdrop-blur dark:border-white/10 dark:bg-slate-900/70">
               <div className="relative h-12 w-12 overflow-hidden rounded-2xl">
                 <Image
-                  src="/anime-tracker-logo.png"
+                  src="/anime-tracker-icon.png"
                   alt="Anime Tracker logo"
                   fill
                   className="object-cover"
+                  sizes="48px"
                   priority
                 />
               </div>

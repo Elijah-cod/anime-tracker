@@ -429,7 +429,7 @@ export async function getUsers(userEmail?: string): Promise<User[]> {
   try {
     const response = await fetchJson<{ items: User[] }>("/users", {
       userEmail,
-      noStore: true,
+      ...(userEmail ? { noStore: true } : { revalidate: 60 }),
     });
     return response.items;
   } catch {

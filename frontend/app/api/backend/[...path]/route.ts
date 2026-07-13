@@ -3,6 +3,13 @@ const BACKEND_API_URL =
 
 const FORWARDED_HEADERS = ["content-type", "x-anime-tracker-user-email"];
 
+const PUBLIC_CACHE_TTL: Record<string, number> = {
+  users: 60,
+  "anime/search": 300,
+  "anime/trending": 300,
+  "anime/release-calendar": 300,
+};
+
 function buildTargetUrl(pathSegments: string[], request: Request): string {
   const sanitizedBaseUrl = BACKEND_API_URL.replace(/\/$/, "");
   const joinedPath = pathSegments.map(encodeURIComponent).join("/");
@@ -17,6 +24,7 @@ async function proxyRequest(
 ) {
   const { path } = await context.params;
   const targetUrl = buildTargetUrl(path, request);
+  const joinedPath = path.join("/");
 
   const headers = new Headers();
   for (const headerName of FORWARDED_HEADERS) {
@@ -26,17 +34,30 @@ async function proxyRequest(
     }
   }
 
+  const cacheTtl =
+    request.method === "GET" && !request.headers.has("x-anime-tracker-user-email")
+      ? PUBLIC_CACHE_TTL[joinedPath]
+      : undefined;
+
   const upstreamResponse = await fetch(targetUrl, {
     method: request.method,
     headers,
     body: request.method === "GET" || request.method === "HEAD" ? undefined : await request.text(),
-    cache: "no-store",
+    ...(cacheTtl ? { next: { revalidate: cacheTtl } } : { cache: "no-store" as const }),
   });
 
   const responseHeaders = new Headers();
   const contentType = upstreamResponse.headers.get("content-type");
   if (contentType) {
     responseHeaders.set("content-type", contentType);
+  }
+  if (cacheTtl) {
+    responseHeaders.set(
+      "cache-control",
+      `public, s-maxage=${cacheTtl}, stale-while-revalidate=${cacheTtl * 5}`,
+    );
+  } else {
+    responseHeaders.set("cache-control", "private, no-store");
   }
 
   return new Response(upstreamResponse.body, {

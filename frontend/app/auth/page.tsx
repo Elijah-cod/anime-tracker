@@ -1,22 +1,8 @@
 import Image from "next/image";
-import { cookies } from "next/headers";
-import { redirect } from "next/navigation";
 
 import { AuthPanel } from "@/components/auth-panel";
-import { decodeActiveUserEmail, ACCOUNT_COOKIE_NAME } from "@/lib/account-session";
-import { getCurrentUser } from "@/lib/api";
 
-export default async function AuthPage() {
-  const cookieStore = await cookies();
-  const activeUserEmail = decodeActiveUserEmail(cookieStore.get(ACCOUNT_COOKIE_NAME)?.value);
-
-  if (activeUserEmail) {
-    const currentUser = await getCurrentUser(activeUserEmail);
-    if (currentUser.email === activeUserEmail) {
-      redirect("/");
-    }
-  }
-
+export default function AuthPage() {
   return (
     <main className="mx-auto flex min-h-screen w-full max-w-[1440px] flex-col gap-8 px-4 py-6 md:px-8 md:py-8">
       <section className="overflow-hidden rounded-[2.25rem] border border-white/60 bg-white/70 p-6 shadow-card backdrop-blur dark:border-white/10 dark:bg-slate-950/70 md:p-8">
@@ -25,10 +11,11 @@ export default async function AuthPage() {
             <div className="inline-flex items-center gap-4 rounded-full border border-white/70 bg-white/70 px-4 py-3 shadow-sm backdrop-blur dark:border-white/10 dark:bg-slate-900/70">
               <div className="relative h-12 w-12 overflow-hidden rounded-2xl">
                 <Image
-                  src="/anime-tracker-logo.png"
+                  src="/anime-tracker-icon.png"
                   alt="Anime Tracker logo"
                   fill
                   className="object-cover"
+                  sizes="48px"
                   priority
                 />
               </div>
@@ -50,7 +37,16 @@ export default async function AuthPage() {
         </div>
       </section>
 
-      <AuthPanel />
+      <AuthPanel
+        initialUsers={[
+          {
+            id: 1,
+            username: "demo-user",
+            email: "demo@anime-tracker.local",
+            auth_provider: "demo",
+          },
+        ]}
+      />
     </main>
   );
 }

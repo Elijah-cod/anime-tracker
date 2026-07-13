@@ -33,11 +33,7 @@ export function AuthPanel({ initialUsers = [] }: { initialUsers?: User[] }) {
       }
     }
 
-    if (!initialUsers.length) {
-      void loadUsers();
-    } else {
-      setUsersLoading(false);
-    }
+    void loadUsers();
 
     return () => {
       isMounted = false;

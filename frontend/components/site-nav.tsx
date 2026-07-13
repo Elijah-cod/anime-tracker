@@ -28,7 +28,7 @@ export function SiteNav({
           <div className="flex w-fit items-center gap-3 rounded-full bg-slate-950 px-3 py-2 text-white dark:bg-sky-500 dark:text-slate-950">
             <div className="relative h-9 w-9 overflow-hidden rounded-2xl bg-white/10">
               <Image
-                src="/anime-tracker-logo.png"
+                src="/anime-tracker-icon.png"
                 alt="Anime Tracker logo"
                 fill
                 className="object-cover"

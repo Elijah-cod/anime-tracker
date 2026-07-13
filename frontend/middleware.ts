@@ -12,10 +12,6 @@ export function middleware(request: NextRequest) {
   const { pathname } = request.nextUrl;
   const isAuthenticated = hasAccountCookie(request);
 
-  if (pathname === "/auth" && isAuthenticated) {
-    return NextResponse.redirect(new URL("/", request.url));
-  }
-
   if (PROTECTED_PATHS.includes(pathname) && !isAuthenticated) {
     return NextResponse.redirect(new URL("/auth", request.url));
   }
@@ -24,5 +20,5 @@ export function middleware(request: NextRequest) {
 }
 
 export const config = {
-  matcher: ["/", "/auth", "/library", "/calendar", "/profile"],
+  matcher: ["/", "/library", "/calendar", "/profile"],
 };

@@ -9,9 +9,9 @@ export const metadata: Metadata = {
   title: "Anime Tracker",
   description: "Track anime progress, browse trending shows, and keep up with release calendars.",
   icons: {
-    icon: "/anime-tracker-logo.png",
-    shortcut: "/anime-tracker-logo.png",
-    apple: "/anime-tracker-logo.png",
+    icon: "/anime-tracker-icon.png",
+    shortcut: "/anime-tracker-icon.png",
+    apple: "/anime-tracker-icon.png",
   },
 };
 

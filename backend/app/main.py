@@ -1,3 +1,6 @@
+from collections.abc import AsyncIterator
+from contextlib import asynccontextmanager
+
 from fastapi import FastAPI
 from fastapi.middleware.cors import CORSMiddleware
 
@@ -11,10 +14,23 @@ from app.models import anime_entry, review, user  # noqa: F401
 
 settings = get_settings()
 
+
+@asynccontextmanager
+async def lifespan(app: FastAPI) -> AsyncIterator[None]:
+    app.state.trending_cache = TrendingAnimeCache(ttl_seconds=settings.cache_ttl_seconds)
+    if settings.should_create_tables_on_startup:
+        Base.metadata.create_all(bind=engine)
+    if settings.seed_demo_data:
+        with SessionLocal() as session:
+            seed_demo_data(session)
+    yield
+
+
 app = FastAPI(
     title=settings.app_name,
     version="0.1.0",
     description="Middleware service for Anime Tracker.",
+    lifespan=lifespan,
 )
 
 app.add_middleware(
@@ -24,15 +40,6 @@ app.add_middleware(
     allow_methods=["*"],
     allow_headers=["*"],
 )
-
-
-@app.on_event("startup")
-async def startup_event() -> None:
-    app.state.trending_cache = TrendingAnimeCache(ttl_seconds=settings.cache_ttl_seconds)
-    Base.metadata.create_all(bind=engine)
-    if settings.seed_demo_data:
-        with SessionLocal() as session:
-            seed_demo_data(session)
 
 
 @app.get("/", tags=["meta"])

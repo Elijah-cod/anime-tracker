@@ -34,7 +34,7 @@ def serialize_entry(entry: AnimeEntry) -> AnimeEntryRead:
 
 
 @router.get("", response_model=AnimeEntryListResponse)
-async def list_entries(
+def list_entries(
     db: Session = Depends(get_db),
     current_user: User = Depends(get_current_user),
 ) -> AnimeEntryListResponse:
@@ -43,12 +43,11 @@ async def list_entries(
         .where(AnimeEntry.user_id == current_user.id)
         .order_by(AnimeEntry.updated_at.desc(), AnimeEntry.id.desc())
     ).all()
-    db.commit()
     return AnimeEntryListResponse(items=[serialize_entry(entry) for entry in entries])
 
 
 @router.get("/summary", response_model=LibrarySummaryResponse)
-async def get_library_summary(
+def get_library_summary(
     db: Session = Depends(get_db),
     current_user: User = Depends(get_current_user),
 ) -> LibrarySummaryResponse:
@@ -57,8 +56,6 @@ async def get_library_summary(
         .where(AnimeEntry.user_id == current_user.id)
         .order_by(AnimeEntry.updated_at.desc(), AnimeEntry.id.desc())
     ).all()
-    db.commit()
-
     total_entries = len(entries)
     total_episodes_watched = sum(entry.episodes_watched for entry in entries)
     scored_entries = [float(entry.score) for entry in entries if entry.score is not None]
@@ -97,7 +94,7 @@ async def get_library_summary(
 
 
 @router.post("", response_model=AnimeEntryRead, status_code=201)
-async def create_entry(
+def create_entry(
     payload: AnimeEntryCreate,
     db: Session = Depends(get_db),
     current_user: User = Depends(get_current_user),
@@ -124,7 +121,7 @@ async def create_entry(
 
 
 @router.patch("/{anime_id}", response_model=AnimeEntryRead)
-async def update_entry(
+def update_entry(
     anime_id: int,
     payload: AnimeEntryUpdate,
     db: Session = Depends(get_db),
@@ -148,7 +145,7 @@ async def update_entry(
 
 
 @router.patch("/{anime_id}/progress", response_model=AnimeEntryRead)
-async def update_entry_progress(
+def update_entry_progress(
     anime_id: int,
     payload: AnimeEntryUpdateProgress,
     db: Session = Depends(get_db),
@@ -176,7 +173,7 @@ async def update_entry_progress(
 
 
 @router.delete("/{anime_id}", status_code=204)
-async def delete_entry(
+def delete_entry(
     anime_id: int,
     db: Session = Depends(get_db),
     current_user: User = Depends(get_current_user),

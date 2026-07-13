@@ -100,14 +100,13 @@ def build_dashboard(db: Session, user: User) -> UserDashboardResponse:
 
 
 @router.get("", response_model=UserListResponse)
-async def list_users(db: Session = Depends(get_db)) -> UserListResponse:
+def list_users(db: Session = Depends(get_db)) -> UserListResponse:
     users = db.scalars(select(User).order_by(User.username.asc())).all()
-    db.commit()
     return UserListResponse(items=[serialize_user(user) for user in users])
 
 
 @router.post("", response_model=UserRead, status_code=status.HTTP_201_CREATED)
-async def create_user(payload: UserCreate, db: Session = Depends(get_db)) -> UserRead:
+def create_user(payload: UserCreate, db: Session = Depends(get_db)) -> UserRead:
     normalized_email = payload.email.strip().lower()
     normalized_username = payload.username.strip()
 
@@ -135,15 +134,13 @@ async def create_user(payload: UserCreate, db: Session = Depends(get_db)) -> Use
 
 
 @router.get("/me", response_model=UserRead)
-async def get_me(current_user: User = Depends(get_current_user)) -> UserRead:
+def get_me(current_user: User = Depends(get_current_user)) -> UserRead:
     return serialize_user(current_user)
 
 
 @router.get("/me/dashboard", response_model=UserDashboardResponse)
-async def get_my_dashboard(
+def get_my_dashboard(
     db: Session = Depends(get_db),
     current_user: User = Depends(get_current_user),
 ) -> UserDashboardResponse:
-    dashboard = build_dashboard(db, current_user)
-    db.commit()
-    return dashboard
+    return build_dashboard(db, current_user)

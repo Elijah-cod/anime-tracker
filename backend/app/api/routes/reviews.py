@@ -31,7 +31,7 @@ def serialize_review(
 
 
 @router.get("", response_model=ReviewListResponse)
-async def list_reviews(
+def list_reviews(
     scope: str = Query("mine", pattern="^(mine|all)$"),
     anime_id: int | None = Query(default=None, ge=1),
     db: Session = Depends(get_db),
@@ -64,7 +64,6 @@ async def list_reviews(
         entry_map.setdefault(entry.anime_id, entry)
 
     user_map = {user.id: user for user in users}
-    db.commit()
     return ReviewListResponse(
         items=[
             serialize_review(
@@ -78,7 +77,7 @@ async def list_reviews(
 
 
 @router.post("", response_model=ReviewRead, status_code=201)
-async def create_review(
+def create_review(
     payload: ReviewCreate,
     db: Session = Depends(get_db),
     current_user: User = Depends(get_current_user),

@@ -29,6 +29,10 @@ class Settings(BaseSettings):
     cache_ttl_seconds: int = Field(default=86400, alias="CACHE_TTL_SECONDS")
     allow_origins_raw: str = Field(default="http://localhost:3000", alias="ALLOW_ORIGINS")
     seed_demo_data: bool = Field(default=True, alias="SEED_DEMO_DATA")
+    create_tables_on_startup: bool | None = Field(
+        default=None,
+        alias="CREATE_TABLES_ON_STARTUP",
+    )
 
     @property
     def allow_origins(self) -> List[str]:
@@ -37,6 +41,12 @@ class Settings(BaseSettings):
     @property
     def normalized_database_url(self) -> str:
         return normalize_database_url(self.database_url)
+
+    @property
+    def should_create_tables_on_startup(self) -> bool:
+        if self.create_tables_on_startup is not None:
+            return self.create_tables_on_startup
+        return self.app_env.lower() != "production"
 
 
 @lru_cache()

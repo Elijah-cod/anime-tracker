@@ -327,11 +327,13 @@ Defined in [`backend/.env.example`](backend/.env.example).
 - `CACHE_TTL_SECONDS`
 - `ALLOW_ORIGINS`
 - `SEED_DEMO_DATA`
+- `CREATE_TABLES_ON_STARTUP`
 
 Recommended production values:
 
 - `APP_ENV=production`
 - `SEED_DEMO_DATA=false`
+- `CREATE_TABLES_ON_STARTUP=false`
 - `ALLOW_ORIGINS=https://your-frontend-domain.example`
 - `DATABASE_URL` can be supplied as `postgresql+psycopg://...`, `postgresql://...`, or `postgres://...`
 
@@ -422,10 +424,13 @@ Required environment variables:
 - `ALLOW_ORIGINS=https://your-vercel-domain.vercel.app`
 - `APP_ENV=production`
 - `SEED_DEMO_DATA=false`
+- `CREATE_TABLES_ON_STARTUP=false`
 
 Notes:
 
 - The backend normalizes `postgres://...` and `postgresql://...` URLs to the `psycopg` driver automatically for hosted Postgres providers.
+- Run `alembic upgrade head` from the Render shell after provisioning a fresh database and before starting production traffic.
+- Render's free web-service plan sleeps when idle. The app minimizes cold-start work, but an always-on Render instance or Railway service is required to eliminate provider wake-up latency.
 
 ## Railway
 
@@ -449,7 +454,7 @@ Use the same backend environment variables as Render.
 
 ## Production Notes
 
-- The backend currently creates tables on startup for this MVP.
+- Local development creates tables on startup by default. Production disables that work with `CREATE_TABLES_ON_STARTUP=false` and uses Alembic migrations instead.
 - Demo seeding is disabled in production with `SEED_DEMO_DATA=false`.
 - AniList and Jikan remain upstream runtime dependencies for live metadata and imports.
 - The backend health endpoint is available at `/api/v1/health`.

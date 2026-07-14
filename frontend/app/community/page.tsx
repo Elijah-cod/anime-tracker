@@ -14,15 +14,15 @@ export default async function CommunityPage() {
     redirect("/auth");
   }
 
-  const currentUser = await getCurrentUser(activeUserEmail);
-  if (currentUser.email !== activeUserEmail) {
-    redirect("/auth");
-  }
-
-  const [entries, reviews] = await Promise.all([
+  const [currentUser, entries, reviews] = await Promise.all([
+    getCurrentUser(activeUserEmail),
     getEntries(activeUserEmail),
     getReviews(activeUserEmail, { scope: "all" }),
   ]);
+
+  if (currentUser.email !== activeUserEmail) {
+    redirect("/auth");
+  }
 
   return (
     <AppShell

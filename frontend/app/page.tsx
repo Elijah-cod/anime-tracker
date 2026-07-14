@@ -24,17 +24,17 @@ export default async function HomePage() {
     redirect("/auth");
   }
 
-  const currentUser = await getCurrentUser(activeUserEmail);
-  if (currentUser.email !== activeUserEmail) {
-    redirect("/auth");
-  }
-
-  const [trending, calendar, entries, summary] = await Promise.all([
+  const [currentUser, trending, calendar, entries, summary] = await Promise.all([
+    getCurrentUser(activeUserEmail),
     getTrendingAnime(),
     getReleaseCalendar(),
     getEntries(activeUserEmail),
     getLibrarySummary(activeUserEmail),
   ]);
+
+  if (currentUser.email !== activeUserEmail) {
+    redirect("/auth");
+  }
 
   return (
     <AppShell

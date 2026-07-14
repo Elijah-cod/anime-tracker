@@ -15,15 +15,15 @@ export default async function CalendarPage() {
     redirect("/auth");
   }
 
-  const currentUser = await getCurrentUser(activeUserEmail);
-  if (currentUser.email !== activeUserEmail) {
-    redirect("/auth");
-  }
-
-  const [entries, calendar] = await Promise.all([
+  const [currentUser, entries, calendar] = await Promise.all([
+    getCurrentUser(activeUserEmail),
     getEntries(activeUserEmail),
     getReleaseCalendar(),
   ]);
+
+  if (currentUser.email !== activeUserEmail) {
+    redirect("/auth");
+  }
 
   return (
     <AppShell

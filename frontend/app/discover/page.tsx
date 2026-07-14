@@ -15,15 +15,15 @@ export default async function DiscoverPage() {
     redirect("/auth");
   }
 
-  const currentUser = await getCurrentUser(activeUserEmail);
-  if (currentUser.email !== activeUserEmail) {
-    redirect("/auth");
-  }
-
-  const [entries, trending] = await Promise.all([
+  const [currentUser, entries, trending] = await Promise.all([
+    getCurrentUser(activeUserEmail),
     getEntries(activeUserEmail),
     getTrendingAnime(),
   ]);
+
+  if (currentUser.email !== activeUserEmail) {
+    redirect("/auth");
+  }
 
   return (
     <AppShell

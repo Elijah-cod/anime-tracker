@@ -16,15 +16,15 @@ export default async function LibraryPage() {
     redirect("/auth");
   }
 
-  const currentUser = await getCurrentUser(activeUserEmail);
-  if (currentUser.email !== activeUserEmail) {
-    redirect("/auth");
-  }
-
-  const [entries, summary] = await Promise.all([
+  const [currentUser, entries, summary] = await Promise.all([
+    getCurrentUser(activeUserEmail),
     getEntries(activeUserEmail),
     getLibrarySummary(activeUserEmail),
   ]);
+
+  if (currentUser.email !== activeUserEmail) {
+    redirect("/auth");
+  }
 
   return (
     <AppShell

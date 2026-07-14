@@ -23,16 +23,16 @@ export default async function ProfilePage() {
     redirect("/auth");
   }
 
-  const currentUser = await getCurrentUser(activeUserEmail);
-  if (currentUser.email !== activeUserEmail) {
-    redirect("/auth");
-  }
-
-  const [users, summary, dashboard] = await Promise.all([
+  const [currentUser, users, summary, dashboard] = await Promise.all([
+    getCurrentUser(activeUserEmail),
     getUsers(activeUserEmail),
     getLibrarySummary(activeUserEmail),
     getUserDashboard(activeUserEmail),
   ]);
+
+  if (currentUser.email !== activeUserEmail) {
+    redirect("/auth");
+  }
 
   return (
     <AppShell

@@ -1,8 +1,34 @@
+"use client";
+
 import { CalendarDays } from "lucide-react";
 import { format, fromUnixTime } from "date-fns";
+import { useEffect, useState } from "react";
 
 import { SafeImage } from "@/components/safe-image";
 import { AnimeCalendarItem } from "@/types/anime";
+
+function LocalAiringTime({ airingAt, mobile = false }: { airingAt?: number | null; mobile?: boolean }) {
+  const [label, setLabel] = useState("Time TBA");
+
+  useEffect(() => {
+    if (airingAt) {
+      setLabel(format(fromUnixTime(airingAt), "EEE, MMM d · h:mm a"));
+    }
+  }, [airingAt]);
+
+  return (
+    <time
+      dateTime={airingAt ? fromUnixTime(airingAt).toISOString() : undefined}
+      className={
+        mobile
+          ? "mt-1 block text-xs font-medium text-accent sm:hidden"
+          : "hidden rounded-lg bg-accent-soft px-3 py-2 text-xs font-semibold text-accent sm:block"
+      }
+    >
+      {label}
+    </time>
+  );
+}
 
 export function ReleaseCalendar({ items }: { items: AnimeCalendarItem[] }) {
   return (
@@ -25,13 +51,9 @@ export function ReleaseCalendar({ items }: { items: AnimeCalendarItem[] }) {
                 {item.title.english ?? item.title.romaji}
               </h3>
               <p className="mt-1 text-xs text-subtle">Episode {item.episode ?? "?"}</p>
-              <p className="mt-1 text-xs font-medium text-accent sm:hidden">
-                {item.airing_at ? format(fromUnixTime(item.airing_at), "EEE, MMM d · h:mm a") : "Time TBA"}
-              </p>
+              <LocalAiringTime airingAt={item.airing_at} mobile />
             </div>
-            <time className="hidden rounded-lg bg-accent-soft px-3 py-2 text-xs font-semibold text-accent sm:block">
-              {item.airing_at ? format(fromUnixTime(item.airing_at), "EEE, MMM d · h:mm a") : "Time TBA"}
-            </time>
+            <LocalAiringTime airingAt={item.airing_at} />
           </article>
         ))}
       </div>

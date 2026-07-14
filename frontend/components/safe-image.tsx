@@ -31,6 +31,8 @@ export function SafeImage({
 }: SafeImageProps) {
   const safeSource = buildSafeSource(src, fallbackSrc);
   const [currentSource, setCurrentSource] = useState(safeSource);
+  const shouldSkipOptimization =
+    unoptimized ?? (currentSource === fallbackSrc || currentSource.startsWith("/api/"));
 
   useEffect(() => {
     setCurrentSource(safeSource);
@@ -41,7 +43,7 @@ export function SafeImage({
       {...props}
       alt={alt}
       src={currentSource}
-      unoptimized={currentSource === fallbackSrc ? true : unoptimized}
+      unoptimized={shouldSkipOptimization}
       onError={() => {
         if (currentSource !== fallbackSrc) {
           setCurrentSource(fallbackSrc);

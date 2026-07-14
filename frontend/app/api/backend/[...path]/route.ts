@@ -2,6 +2,7 @@ const BACKEND_API_URL =
   process.env.NEXT_PUBLIC_API_URL ?? "http://localhost:8000/api/v1";
 
 const FORWARDED_HEADERS = ["content-type", "x-anime-tracker-user-email"];
+const UPSTREAM_TIMEOUT_MS = 10_000;
 
 const PUBLIC_CACHE_TTL: Record<string, number> = {
   users: 60,
@@ -39,12 +40,21 @@ async function proxyRequest(
       ? PUBLIC_CACHE_TTL[joinedPath]
       : undefined;
 
-  const upstreamResponse = await fetch(targetUrl, {
-    method: request.method,
-    headers,
-    body: request.method === "GET" || request.method === "HEAD" ? undefined : await request.text(),
-    ...(cacheTtl ? { next: { revalidate: cacheTtl } } : { cache: "no-store" as const }),
-  });
+  let upstreamResponse: Response;
+  try {
+    upstreamResponse = await fetch(targetUrl, {
+      method: request.method,
+      headers,
+      body: request.method === "GET" || request.method === "HEAD" ? undefined : await request.text(),
+      signal: AbortSignal.timeout(UPSTREAM_TIMEOUT_MS),
+      ...(cacheTtl ? { next: { revalidate: cacheTtl } } : { cache: "no-store" as const }),
+    });
+  } catch {
+    return Response.json(
+      { detail: "The API is temporarily unavailable. Please try again." },
+      { status: 504, headers: { "cache-control": "no-store" } },
+    );
+  }
 
   const responseHeaders = new Headers();
   const contentType = upstreamResponse.headers.get("content-type");

@@ -168,31 +168,24 @@ export function LibraryManager({
   }
 
   return (
-    <section className="rounded-[2rem] border border-slate-200/80 bg-white/85 p-6 shadow-card backdrop-blur dark:border-slate-800 dark:bg-slate-950/80">
-      <div className="flex flex-col gap-4 md:flex-row md:items-end md:justify-between">
-        <div>
-          <p className="text-xs uppercase tracking-[0.3em] text-slate-500 dark:text-slate-400">
-            Library Manager
-          </p>
-          <h2 className="mt-2 text-2xl font-semibold text-slate-950 dark:text-slate-50">
-            Filter statuses and tune entries
-          </h2>
-        </div>
-        <div className="rounded-full border border-slate-200 bg-slate-50 px-4 py-2 text-sm text-slate-600 dark:border-slate-800 dark:bg-slate-900 dark:text-slate-300">
+    <section>
+      <div className="flex items-center justify-between gap-4">
+        <h2 className="text-2xl font-bold tracking-[-0.025em] text-ink">Library</h2>
+        <div className="text-sm text-subtle">
           {libraryEntries.length} tracked entries
         </div>
       </div>
 
-      <div className="mt-6 flex flex-wrap gap-2">
+      <div className="-mx-5 mt-5 flex gap-2 overflow-x-auto border-b border-line px-5 sm:-mx-8 sm:px-8 lg:mx-0 lg:px-0">
         {STATUSES.map((status) => (
           <button
             key={status}
             type="button"
             onClick={() => setFilter(status)}
-            className={`rounded-full px-4 py-2 text-sm font-semibold transition ${
+            className={`flex min-h-11 shrink-0 items-center gap-2 border-b-2 px-3 text-sm font-semibold transition-colors ${
               filter === status
-                ? "bg-slate-950 text-white dark:bg-sky-500 dark:text-slate-950"
-                : "border border-slate-200 bg-slate-50 text-slate-600 dark:border-slate-800 dark:bg-slate-900 dark:text-slate-300"
+                ? "border-accent text-accent"
+                : "border-transparent text-subtle hover:text-ink"
             }`}
           >
             {status === "ALL" ? (
@@ -201,30 +194,24 @@ export function LibraryManager({
                 All
               </span>
             ) : (
-              status
+              <>
+                <span className="capitalize">{status.toLowerCase().replace("_", " ")}</span>
+                <span className="rounded-full bg-muted px-2 py-0.5 text-[11px] text-subtle">
+                  {statusCounts[status] ?? 0}
+                </span>
+              </>
             )}
           </button>
         ))}
       </div>
 
-      <div className="mt-4 flex flex-wrap gap-2">
-        {STATUSES.filter((status) => status !== "ALL").map((status) => (
-          <div
-            key={`count-${status}`}
-            className="rounded-full border border-slate-200 bg-white px-3 py-1 text-xs font-semibold text-slate-600 dark:border-slate-800 dark:bg-slate-900 dark:text-slate-300"
-          >
-            {status}: {statusCounts[status] ?? 0}
-          </div>
-        ))}
-      </div>
-
       {message ? (
-        <p className="mt-4 text-sm text-slate-600 transition-opacity dark:text-slate-300">
+        <p className="mt-4 text-sm font-medium text-accent transition-opacity">
           {message}
         </p>
       ) : null}
 
-      <div className="mt-6 grid gap-4">
+      <div className="mt-5 grid gap-3">
         {filteredEntries.map((entry) => {
           const draft = drafts[entry.anime_id] ?? {
             status: entry.status,
@@ -239,31 +226,31 @@ export function LibraryManager({
           return (
             <article
               key={entry.anime_id}
-              className="grid gap-4 rounded-3xl border border-slate-200/70 bg-slate-50/80 p-4 dark:border-slate-800 dark:bg-slate-900/80 lg:grid-cols-[88px_1fr_auto]"
+              className="grid grid-cols-[72px_minmax(0,1fr)] gap-4 rounded-2xl border border-line bg-surface p-3.5 sm:grid-cols-[82px_minmax(0,1fr)] lg:grid-cols-[82px_minmax(0,1fr)_auto] lg:p-4"
             >
-              <div className="relative h-28 overflow-hidden rounded-2xl">
-                <SafeImage src={entry.cover_image} alt={entry.title} fill className="object-cover" />
+              <div className="relative h-[104px] overflow-hidden rounded-xl bg-muted sm:h-[116px]">
+                <SafeImage src={entry.cover_image} alt={entry.title} fill className="object-cover" sizes="82px" />
               </div>
 
-              <div className="space-y-4">
+              <div className="min-w-0 space-y-3">
                 <div>
-                  <h3 className="text-lg font-semibold text-slate-950 dark:text-slate-50">
+                  <h3 className="line-clamp-2 text-base font-bold text-ink sm:text-lg">
                     {entry.title}
                   </h3>
-                  <p className="mt-1 text-sm text-slate-600 dark:text-slate-300">
+                  <p className="mt-1 text-xs text-subtle sm:text-sm">
                     {entry.episodes_watched} / {entry.total_episodes ?? "?"} episodes watched
                   </p>
                 </div>
 
-                <div className="grid gap-3 md:grid-cols-[1fr_180px]">
-                  <label className="space-y-2 text-sm text-slate-600 dark:text-slate-300">
+                <div className="grid gap-2 sm:grid-cols-[1fr_130px]">
+                  <label className="space-y-1 text-xs font-medium text-subtle">
                     <span>Status</span>
                     <select
                       value={draft.status}
                       onChange={(event) =>
                         updateDraft(entry.anime_id, { status: event.target.value })
                       }
-                      className="w-full rounded-2xl border border-slate-200 bg-white px-4 py-3 text-sm text-slate-900 outline-none transition focus:border-slate-400 dark:border-slate-700 dark:bg-slate-950 dark:text-slate-50 dark:focus:border-slate-500"
+                      className="min-h-11 w-full rounded-xl border border-line bg-surface px-3 text-sm text-ink outline-none transition-colors focus:border-accent"
                     >
                       {STATUSES.filter((status) => status !== "ALL").map((status) => (
                         <option key={status} value={status}>
@@ -273,7 +260,7 @@ export function LibraryManager({
                     </select>
                   </label>
 
-                  <label className="space-y-2 text-sm text-slate-600 dark:text-slate-300">
+                  <label className="space-y-1 text-xs font-medium text-subtle">
                     <span className="inline-flex items-center gap-2">
                       <Star className="h-4 w-4" />
                       Score
@@ -283,21 +270,21 @@ export function LibraryManager({
                       onChange={(event) => updateDraft(entry.anime_id, { score: event.target.value })}
                       inputMode="decimal"
                       placeholder="8.5"
-                      className="w-full rounded-2xl border border-slate-200 bg-white px-4 py-3 text-sm text-slate-900 outline-none transition focus:border-slate-400 dark:border-slate-700 dark:bg-slate-950 dark:text-slate-50 dark:focus:border-slate-500"
+                      className="min-h-11 w-full rounded-xl border border-line bg-surface px-3 text-sm text-ink outline-none transition-colors focus:border-accent"
                     />
                   </label>
                 </div>
               </div>
 
-              <div className="flex flex-col items-stretch gap-3">
+              <div className="col-span-2 flex items-center justify-end gap-2 lg:col-span-1 lg:flex-col lg:items-stretch">
                 <button
                   type="button"
                   onClick={() => handleSave(entry)}
                   disabled={!isDirty || isSaving || isDeleting}
-                  className={`inline-flex rounded-full px-5 py-3 text-sm font-semibold transition disabled:cursor-not-allowed disabled:opacity-70 ${
+                  className={`inline-flex min-h-11 items-center justify-center rounded-xl px-4 text-sm font-semibold transition-colors disabled:cursor-not-allowed disabled:opacity-60 ${
                     isDirty
-                      ? "bg-slate-950 text-white hover:bg-slate-800 dark:bg-emerald-500 dark:text-slate-950 dark:hover:bg-emerald-400"
-                      : "border border-slate-200 bg-slate-100 text-slate-500 dark:border-slate-800 dark:bg-slate-900 dark:text-slate-400"
+                      ? "bg-accent text-white hover:bg-accent/90"
+                      : "border border-line bg-muted text-subtle"
                   }`}
                 >
                   {isSaving ? (
@@ -322,7 +309,7 @@ export function LibraryManager({
                   type="button"
                   onClick={() => handleDelete(entry)}
                   disabled={isSaving || isDeleting}
-                  className="inline-flex rounded-full border border-rose-200 bg-white px-5 py-3 text-sm font-semibold text-rose-700 transition hover:bg-rose-50 disabled:cursor-not-allowed disabled:opacity-70 dark:border-rose-500/30 dark:bg-slate-950 dark:text-rose-300 dark:hover:bg-rose-500/10"
+                  className="inline-flex min-h-11 items-center justify-center rounded-xl border border-line bg-surface px-4 text-sm font-semibold text-red-600 transition-colors hover:bg-red-50 disabled:cursor-not-allowed disabled:opacity-60 dark:text-red-300 dark:hover:bg-red-950/30"
                 >
                   {isDeleting ? (
                     <span className="inline-flex items-center gap-2">
@@ -343,7 +330,7 @@ export function LibraryManager({
       </div>
 
       {!filteredEntries.length ? (
-        <p className="mt-4 text-sm text-slate-500 dark:text-slate-400">
+        <p className="mt-4 text-sm text-subtle">
           No entries match that status yet.
         </p>
       ) : null}

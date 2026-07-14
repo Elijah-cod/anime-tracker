@@ -1,6 +1,6 @@
 "use client";
 
-import { ArrowRight, LoaderCircle, ShieldCheck, UserPlus } from "lucide-react";
+import { ArrowRight, LoaderCircle, UserPlus } from "lucide-react";
 import { useRouter } from "next/navigation";
 import { FormEvent, useEffect, useState, useTransition } from "react";
 
@@ -86,25 +86,14 @@ export function AuthPanel({ initialUsers = [] }: { initialUsers?: User[] }) {
   }
 
   return (
-    <section className="grid gap-6 lg:grid-cols-[1.05fr_0.95fr]">
-      <div className="rounded-[2rem] border border-white/60 bg-white/80 p-6 shadow-card backdrop-blur dark:border-white/10 dark:bg-slate-950/75 md:p-8">
-        <div className="flex items-start justify-between gap-4">
-          <div>
-            <p className="text-xs uppercase tracking-[0.3em] text-slate-500 dark:text-slate-400">
-              Sign In
-            </p>
-            <h2 className="mt-3 text-3xl font-semibold tracking-tight text-slate-950 dark:text-slate-50">
-              Pick an existing tracker profile
-            </h2>
-          </div>
-          <div className="rounded-full border border-emerald-300/70 bg-emerald-100/70 p-3 text-emerald-700 dark:border-emerald-500/30 dark:bg-emerald-500/10 dark:text-emerald-200">
-            <ShieldCheck className="h-5 w-5" />
-          </div>
-        </div>
+    <section className="grid overflow-hidden rounded-[1.75rem] border border-border bg-surface shadow-card lg:grid-cols-[1.05fr_0.95fr]">
+      <div className="p-5 sm:p-8 lg:p-10">
+        <p className="text-xs font-semibold uppercase tracking-[0.2em] text-subtle">Choose profile</p>
+        <h2 className="mt-2 text-2xl font-semibold tracking-tight text-ink">Welcome back</h2>
 
-        <div className="mt-6 space-y-3">
+        <div className="mt-6 divide-y divide-border">
           {usersLoading ? (
-            <div className="rounded-3xl border border-slate-200 bg-slate-50/80 px-4 py-4 text-sm text-slate-500 dark:border-slate-800 dark:bg-slate-900/80 dark:text-slate-400">
+            <div className="py-4 text-sm text-subtle">
               Loading profiles...
             </div>
           ) : null}
@@ -118,54 +107,50 @@ export function AuthPanel({ initialUsers = [] }: { initialUsers?: User[] }) {
                 type="button"
                 onClick={() => continueAs(user.email)}
                 disabled={isPending}
-                className="flex w-full items-center justify-between rounded-3xl border border-slate-200 bg-slate-50/80 px-4 py-4 text-left transition hover:bg-slate-100 disabled:cursor-not-allowed disabled:opacity-70 dark:border-slate-800 dark:bg-slate-900/80 dark:hover:bg-slate-800"
+                className="group flex min-h-[72px] w-full items-center gap-3 py-3 text-left transition disabled:cursor-not-allowed disabled:opacity-60"
               >
-                <div>
-                  <p className="font-semibold text-slate-950 dark:text-slate-50">{user.username}</p>
+                <span className="grid h-11 w-11 shrink-0 place-items-center rounded-full bg-accent/10 font-bold uppercase text-accent">
+                  {user.username.slice(0, 1)}
+                </span>
+                <div className="min-w-0 flex-1">
+                  <p className="truncate font-semibold text-ink group-hover:text-accent">{user.username}</p>
                   {publicMeta ? (
-                    <p className="mt-1 text-sm text-slate-500 dark:text-slate-400">{publicMeta}</p>
+                    <p className="mt-1 truncate text-sm text-subtle">{publicMeta}</p>
                   ) : (
-                    <p className="mt-1 text-sm text-slate-500 dark:text-slate-400">
-                      {getPrivateUserHint(user)}
-                    </p>
+                    <p className="mt-1 text-sm text-subtle">{getPrivateUserHint(user)}</p>
                   )}
                 </div>
-                <span className="inline-flex items-center gap-2 rounded-full bg-slate-950 px-3 py-1 text-xs font-semibold uppercase tracking-[0.18em] text-white dark:bg-white dark:text-slate-950">
-                  Continue
-                  <ArrowRight className="h-3.5 w-3.5" />
-                </span>
+                <ArrowRight className="h-5 w-5 text-subtle transition group-hover:translate-x-1 group-hover:text-accent" />
               </button>
             );
           })}
 
           {!usersLoading && !users.length ? (
-            <div className="rounded-3xl border border-dashed border-slate-300 bg-slate-50/80 px-4 py-4 text-sm text-slate-500 dark:border-slate-700 dark:bg-slate-900/80 dark:text-slate-400">
+            <div className="rounded-xl border border-dashed border-border bg-canvas px-4 py-5 text-sm text-subtle">
               No profiles yet. Create the first account to get started.
             </div>
           ) : null}
         </div>
       </div>
 
-      <div className="rounded-[2rem] border border-slate-200/80 bg-white/85 p-6 shadow-card backdrop-blur dark:border-slate-800 dark:bg-slate-950/80 md:p-8">
-        <div className="flex items-center gap-2 text-sm font-semibold uppercase tracking-[0.2em] text-slate-500 dark:text-slate-400">
+      <div className="border-t border-border bg-canvas p-5 sm:p-8 lg:border-l lg:border-t-0 lg:p-10">
+        <div className="flex items-center gap-2 text-xs font-semibold uppercase tracking-[0.2em] text-subtle">
           <UserPlus className="h-4 w-4" />
-          Create Account
+          New profile
         </div>
-        <h2 className="mt-3 text-3xl font-semibold tracking-tight text-slate-950 dark:text-slate-50">
-          Start a fresh anime profile
+        <h2 className="mt-2 text-2xl font-semibold tracking-tight text-ink">
+          Start fresh
         </h2>
 
-        <form
-          onSubmit={handleCreate}
-          className="mt-6 space-y-4 rounded-3xl border border-slate-200 bg-slate-50/80 p-4 dark:border-slate-800 dark:bg-slate-900/80"
-        >
+        <form onSubmit={handleCreate} className="mt-6 space-y-3">
           <input
             value={formState.username}
             onChange={(event) =>
               setFormState((current) => ({ ...current, username: event.target.value }))
             }
             placeholder="username"
-            className="w-full rounded-2xl border border-slate-200 bg-white px-4 py-3 text-sm text-slate-900 outline-none transition focus:border-slate-400 dark:border-slate-700 dark:bg-slate-950 dark:text-slate-50 dark:focus:border-slate-500"
+            aria-label="Username"
+            className="min-h-11 w-full rounded-xl border border-border bg-surface px-4 text-sm text-ink outline-none transition focus:border-accent"
           />
           <input
             value={formState.email}
@@ -173,21 +158,24 @@ export function AuthPanel({ initialUsers = [] }: { initialUsers?: User[] }) {
               setFormState((current) => ({ ...current, email: event.target.value }))
             }
             placeholder="email@example.com"
-            className="w-full rounded-2xl border border-slate-200 bg-white px-4 py-3 text-sm text-slate-900 outline-none transition focus:border-slate-400 dark:border-slate-700 dark:bg-slate-950 dark:text-slate-50 dark:focus:border-slate-500"
+            type="email"
+            aria-label="Email"
+            className="min-h-11 w-full rounded-xl border border-border bg-surface px-4 text-sm text-ink outline-none transition focus:border-accent"
           />
           <button
             type="submit"
             disabled={isPending}
-            className="inline-flex items-center gap-2 rounded-full bg-slate-950 px-5 py-3 text-sm font-semibold text-white transition hover:bg-slate-800 disabled:cursor-not-allowed disabled:opacity-70 dark:bg-emerald-500 dark:text-slate-950 dark:hover:bg-emerald-400"
+            className="inline-flex min-h-11 items-center gap-2 rounded-xl bg-accent px-5 text-sm font-semibold text-white transition hover:brightness-95 disabled:cursor-not-allowed disabled:opacity-60"
           >
             {isPending ? <LoaderCircle className="h-4 w-4 animate-spin" /> : null}
-            Create and enter dashboard
+            Create profile
           </button>
         </form>
 
         {message ? (
-          <p className="mt-4 text-sm text-slate-600 dark:text-slate-300">{message}</p>
+          <p className="mt-4 text-sm text-rose-600">{message}</p>
         ) : null}
+        <p className="mt-5 text-xs leading-5 text-subtle">Your email is private. Other profiles only see your username.</p>
       </div>
     </section>
   );

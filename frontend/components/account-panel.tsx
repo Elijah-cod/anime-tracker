@@ -1,6 +1,6 @@
 "use client";
 
-import { LoaderCircle, ShieldCheck, UserPlus } from "lucide-react";
+import { Check, ChevronRight, LoaderCircle, UserPlus } from "lucide-react";
 import { useRouter } from "next/navigation";
 import { FormEvent, useState, useTransition } from "react";
 
@@ -65,72 +65,52 @@ export function AccountPanel({
   }
 
   return (
-    <section className="rounded-[2rem] border border-slate-200/80 bg-white/85 p-6 shadow-card backdrop-blur dark:border-slate-800 dark:bg-slate-950/80">
-      <div className="flex items-start justify-between gap-4">
-        <div>
-          <p className="text-xs uppercase tracking-[0.3em] text-slate-500 dark:text-slate-400">
-            Account Scope
-          </p>
-          <h2 className="mt-2 text-2xl font-semibold text-slate-950 dark:text-slate-50">
-            Switch or create profiles
-          </h2>
+    <section className="grid gap-6 lg:grid-cols-2">
+      <div className="rounded-[1.5rem] border border-border bg-surface p-5 shadow-card sm:p-6">
+        <p className="text-xs font-semibold uppercase tracking-[0.2em] text-subtle">Profiles</p>
+        <h2 className="mt-1 text-xl font-semibold text-ink">Switch account</h2>
+        <div className="mt-5 divide-y divide-border">
+          {users.map((user) => {
+            const isActive = user.email === currentUser.email;
+            const publicMeta = getPublicUserMeta(user);
+            return (
+              <button
+                key={user.id}
+                type="button"
+                onClick={() => switchAccount(user.email)}
+                className="flex min-h-[68px] w-full items-center gap-3 py-3 text-left transition hover:text-accent"
+              >
+                <span className={`grid h-10 w-10 shrink-0 place-items-center rounded-full text-sm font-bold uppercase ${isActive ? "bg-accent text-white" : "bg-canvas text-subtle"}`}>
+                  {user.username.slice(0, 1)}
+                </span>
+                <span className="min-w-0 flex-1">
+                  <span className="block truncate font-semibold text-ink">{user.username}</span>
+                  <span className="mt-0.5 block text-sm text-subtle">
+                    {publicMeta ?? getPrivateUserHint(user)}
+                  </span>
+                </span>
+                {isActive ? <Check className="h-5 w-5 text-accent" /> : <ChevronRight className="h-5 w-5 text-subtle" />}
+              </button>
+            );
+          })}
         </div>
-        <div className="rounded-full border border-emerald-300/70 bg-emerald-100/70 p-3 text-emerald-700 dark:border-emerald-500/30 dark:bg-emerald-500/10 dark:text-emerald-200">
-          <ShieldCheck className="h-5 w-5" />
-        </div>
       </div>
 
-      <div className="mt-6 rounded-3xl border border-slate-200 bg-slate-50/80 p-4 dark:border-slate-800 dark:bg-slate-900/80">
-        <p className="text-sm text-slate-600 dark:text-slate-300">Active account</p>
-        <p className="mt-2 text-lg font-semibold text-slate-950 dark:text-slate-50">
-          {currentUser.username}
-        </p>
-        <p className="mt-1 text-sm text-slate-500 dark:text-slate-400">
-          {getPublicUserMeta(currentUser) ?? getPrivateUserHint(currentUser)}
-        </p>
-      </div>
-
-      <div className="mt-6 space-y-3">
-        {users.map((user) => {
-          const isActive = user.email === currentUser.email;
-          const publicMeta = getPublicUserMeta(user);
-          return (
-            <button
-              key={user.id}
-              type="button"
-              onClick={() => switchAccount(user.email)}
-              className={`flex w-full items-center justify-between rounded-3xl border px-4 py-4 text-left transition ${
-                isActive
-                  ? "border-sky-300 bg-sky-50/80 dark:border-sky-500/30 dark:bg-sky-500/10"
-                  : "border-slate-200 bg-slate-50/80 hover:bg-slate-100 dark:border-slate-800 dark:bg-slate-900/80 dark:hover:bg-slate-800"
-              }`}
-            >
-              <div>
-                <p className="font-semibold text-slate-950 dark:text-slate-50">{user.username}</p>
-                <p className="mt-1 text-sm text-slate-500 dark:text-slate-400">
-                  {publicMeta ?? getPrivateUserHint(user)}
-                </p>
-              </div>
-              <span className="rounded-full bg-slate-950 px-3 py-1 text-xs font-semibold uppercase tracking-[0.18em] text-white dark:bg-white dark:text-slate-950">
-                {isActive ? "Active" : user.auth_provider}
-              </span>
-            </button>
-          );
-        })}
-      </div>
-
-      <form onSubmit={handleCreate} className="mt-6 space-y-4 rounded-3xl border border-slate-200 bg-slate-50/80 p-4 dark:border-slate-800 dark:bg-slate-900/80">
-        <div className="flex items-center gap-2 text-sm font-semibold text-slate-700 dark:text-slate-200">
+      <form onSubmit={handleCreate} className="rounded-[1.5rem] border border-border bg-surface p-5 shadow-card sm:p-6">
+        <div className="flex items-center gap-2 text-xs font-semibold uppercase tracking-[0.2em] text-subtle">
           <UserPlus className="h-4 w-4" />
-          Create local account
+          New profile
         </div>
+        <h2 className="mt-1 text-xl font-semibold text-ink">Create an account</h2>
+        <div className="mt-5 space-y-3">
         <input
           value={formState.username}
           onChange={(event) =>
             setFormState((current) => ({ ...current, username: event.target.value }))
           }
           placeholder="username"
-          className="w-full rounded-2xl border border-slate-200 bg-white px-4 py-3 text-sm text-slate-900 outline-none transition focus:border-slate-400 dark:border-slate-700 dark:bg-slate-950 dark:text-slate-50 dark:focus:border-slate-500"
+          aria-label="Username"
+          className="min-h-11 w-full rounded-xl border border-border bg-canvas px-4 text-sm text-ink outline-none transition focus:border-accent"
         />
         <input
           value={formState.email}
@@ -138,21 +118,22 @@ export function AccountPanel({
             setFormState((current) => ({ ...current, email: event.target.value }))
           }
           placeholder="email@example.com"
-          className="w-full rounded-2xl border border-slate-200 bg-white px-4 py-3 text-sm text-slate-900 outline-none transition focus:border-slate-400 dark:border-slate-700 dark:bg-slate-950 dark:text-slate-50 dark:focus:border-slate-500"
+          type="email"
+          aria-label="Email"
+          className="min-h-11 w-full rounded-xl border border-border bg-canvas px-4 text-sm text-ink outline-none transition focus:border-accent"
         />
         <button
           type="submit"
           disabled={isPending}
-          className="inline-flex items-center gap-2 rounded-full bg-slate-950 px-5 py-3 text-sm font-semibold text-white transition hover:bg-slate-800 disabled:cursor-not-allowed disabled:opacity-70 dark:bg-emerald-500 dark:text-slate-950 dark:hover:bg-emerald-400"
+          className="inline-flex min-h-11 items-center gap-2 rounded-xl bg-accent px-5 text-sm font-semibold text-white transition hover:brightness-95 disabled:cursor-not-allowed disabled:opacity-60"
         >
           {isPending ? <LoaderCircle className="h-4 w-4 animate-spin" /> : null}
           Create and switch
         </button>
+        </div>
+        {message ? <p className="mt-4 text-sm text-subtle">{message}</p> : null}
+        <p className="mt-5 text-xs leading-5 text-subtle">Email addresses stay private and are only used to keep each profile&apos;s library separate.</p>
       </form>
-
-      {message ? (
-        <p className="mt-4 text-sm text-slate-600 dark:text-slate-300">{message}</p>
-      ) : null}
     </section>
   );
 }

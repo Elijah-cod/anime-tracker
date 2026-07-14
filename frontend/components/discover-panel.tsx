@@ -1,6 +1,6 @@
 "use client";
 
-import { BookmarkPlus, CheckCircle2, LoaderCircle, PlayCircle, Search } from "lucide-react";
+import { BookmarkPlus, Check, LoaderCircle, Play, Search } from "lucide-react";
 import { useDeferredValue, useEffect, useMemo, useRef, useState, useTransition } from "react";
 import { useRouter } from "next/navigation";
 
@@ -50,18 +50,11 @@ export function DiscoverPanel({
     startSearchTransition(async () => {
       try {
         const items = await searchAnime(normalizedQuery);
-        if (searchRequestId.current !== requestId) {
-          return;
-        }
-        setResults(items);
+        if (searchRequestId.current === requestId) setResults(items);
       } catch (searchError) {
-        if (searchRequestId.current !== requestId) {
-          return;
-        }
+        if (searchRequestId.current !== requestId) return;
         setResults([]);
-        setError(
-          searchError instanceof Error ? searchError.message : "Search is unavailable right now.",
-        );
+        setError(searchError instanceof Error ? searchError.message : "Search is unavailable.");
       }
     });
   }, [deferredQuery]);
@@ -71,146 +64,107 @@ export function DiscoverPanel({
     setError(null);
 
     try {
-      await createEntry({
-        anime_id: item.id,
-        title: item.title.english ?? item.title.romaji,
-        cover_image: item.cover_image ?? `/api/poster/${item.id}`,
-        status,
-        episodes_watched: 0,
-        total_episodes: item.episodes ?? null,
-      }, activeUserEmail);
-      setAddedItems((current) => ({
-        ...current,
-        [item.id]: status,
-      }));
+      await createEntry(
+        {
+          anime_id: item.id,
+          title: item.title.english ?? item.title.romaji,
+          cover_image: item.cover_image ?? `/api/poster/${item.id}`,
+          status,
+          episodes_watched: 0,
+          total_episodes: item.episodes ?? null,
+        },
+        activeUserEmail,
+      );
+      setAddedItems((current) => ({ ...current, [item.id]: status }));
       router.refresh();
     } catch (createError) {
-      setError(
-        createError instanceof Error
-          ? createError.message
-          : "Could not add that anime to your tracker.",
-      );
+      setError(createError instanceof Error ? createError.message : "That title could not be added.");
     } finally {
       setAddingKey(null);
     }
   }
 
-  return (
-    <section className="rounded-[2rem] border border-slate-200/80 bg-white/85 p-6 shadow-card backdrop-blur dark:border-slate-800 dark:bg-slate-950/80">
-      <div className="flex flex-col gap-3">
-        <div>
-          <p className="text-xs uppercase tracking-[0.3em] text-slate-500 dark:text-slate-400">
-            Discover
-          </p>
-          <h2 className="mt-2 text-2xl font-semibold text-slate-950 dark:text-slate-50">
-            Search AniList and save titles
-          </h2>
-        </div>
-      </div>
+  const hasSearch = deferredQuery.trim().length >= 2;
 
-      <label className="mt-6 flex items-center gap-3 rounded-full border border-slate-200 bg-slate-50 px-4 py-3 text-sm text-slate-500 dark:border-slate-800 dark:bg-slate-900 dark:text-slate-300">
-        <Search className="h-4 w-4" />
+  return (
+    <section>
+      <label className="flex min-h-14 items-center gap-3 rounded-2xl border border-line bg-surface px-4 text-subtle shadow-sm focus-within:border-accent">
+        {searching ? <LoaderCircle className="h-5 w-5 animate-spin" /> : <Search className="h-5 w-5" />}
         <input
           value={query}
           onChange={(event) => setQuery(event.target.value)}
-          placeholder="Search for a title like Vinland Saga or Mob Psycho 100"
-          className="w-full bg-transparent outline-none placeholder:text-slate-400"
+          placeholder="Search anime, titles, or genres"
+          className="min-w-0 flex-1 bg-transparent text-base text-ink outline-none placeholder:text-subtle"
         />
       </label>
 
-      {error ? (
-        <p className="mt-4 text-sm text-rose-600 dark:text-rose-300">{error}</p>
-      ) : null}
+      {error ? <p className="mt-3 text-sm text-red-600 dark:text-red-300">{error}</p> : null}
 
-      <div className="mt-4 flex flex-wrap gap-2 text-xs text-slate-500 dark:text-slate-400">
-        <span className="rounded-full border border-slate-200 bg-white px-3 py-1 dark:border-slate-800 dark:bg-slate-900">
-          Start watching for one-click tracking
-        </span>
-        <span className="rounded-full border border-slate-200 bg-white px-3 py-1 dark:border-slate-800 dark:bg-slate-900">
-          Add to queue for queue and snapshot
-        </span>
-      </div>
+      {hasSearch ? (
+        <div className="mt-7">
+          <div className="mb-4 flex items-center justify-between">
+            <h2 className="text-xl font-bold text-ink">Search Results</h2>
+            {!searching ? <span className="text-sm text-subtle">{results.length} titles</span> : null}
+          </div>
+          <div className="grid grid-cols-2 gap-x-4 gap-y-7 sm:grid-cols-3 lg:grid-cols-4">
+            {results.map((item) => {
+              const title = item.title.english ?? item.title.romaji;
+              const trackedStatus = addedItems[item.id] ?? trackedStatusByAnimeId[item.id];
+              const isTracked = Boolean(trackedStatus);
+              const isBusy = addingKey?.startsWith(`${item.id}:`) ?? false;
 
-      {searching ? (
-        <div className="mt-6 inline-flex items-center gap-2 text-sm text-slate-500 dark:text-slate-300">
-          <LoaderCircle className="h-4 w-4 animate-spin" />
-          Searching AniList…
-        </div>
-      ) : null}
-
-      {!searching && deferredQuery.trim().length >= 2 ? (
-        <div className="mt-6 grid grid-cols-1 gap-5 md:grid-cols-2 xl:grid-cols-3">
-          {results.map((item) => {
-            const trackedStatus = addedItems[item.id] ?? trackedStatusByAnimeId[item.id];
-            const isTracked = Boolean(trackedStatus);
-            const isWatching = trackedStatus === "WATCHING";
-            const isPlanning = trackedStatus === "PLANNING";
-            const isWatchingBusy = addingKey === `${item.id}:WATCHING`;
-            const isPlanningBusy = addingKey === `${item.id}:PLANNING`;
-
-            return (
-              <article
-                key={item.id}
-                className="overflow-hidden rounded-[1.75rem] border border-slate-200 bg-slate-50/80 dark:border-slate-800 dark:bg-slate-900/80"
-              >
-                <div className="relative aspect-[3/4]">
-                  <SafeImage
-                    src={item.cover_image}
-                    alt={item.title.english ?? item.title.romaji}
-                    fill
-                    className="object-cover"
-                    sizes="(max-width: 1280px) 50vw, 25vw"
-                  />
-                </div>
-                <div className="space-y-4 p-5">
-                  <div>
-                    <h3 className="line-clamp-3 min-h-[6.25rem] text-2xl font-semibold leading-9 text-slate-950 dark:text-slate-50">
-                      {item.title.english ?? item.title.romaji}
-                    </h3>
-                    <div className="mt-1 flex flex-wrap items-center gap-2 text-sm text-slate-600 dark:text-slate-300">
-                      <span>{item.episodes ? `${item.episodes} episodes` : "Episode count TBA"}</span>
-                      {trackedStatus ? (
-                        <span className="rounded-full bg-slate-950 px-2 py-1 text-[10px] font-semibold uppercase tracking-[0.16em] text-white dark:bg-white dark:text-slate-950">
-                          {trackedStatus}
-                        </span>
-                      ) : null}
-                    </div>
+              return (
+                <article key={item.id} className="min-w-0">
+                  <div className="relative aspect-[2/3] overflow-hidden rounded-xl bg-muted shadow-card">
+                    <SafeImage
+                      src={item.cover_image}
+                      alt={title}
+                      fill
+                      className="object-cover"
+                      sizes="(max-width: 640px) 45vw, (max-width: 1024px) 30vw, 22vw"
+                    />
+                    {trackedStatus ? (
+                      <span className="absolute left-2 top-2 rounded-lg bg-surface/95 px-2 py-1 text-[10px] font-bold uppercase tracking-wide text-accent shadow-sm">
+                        {trackedStatus === "PLANNING" ? "In queue" : "Watching"}
+                      </span>
+                    ) : null}
                   </div>
-
-                  <div className="grid gap-2">
+                  <h3 className="mt-2 line-clamp-3 text-sm font-semibold leading-5 text-ink sm:text-base">
+                    {title}
+                  </h3>
+                  <p className="mt-1 text-xs text-subtle">
+                    {item.episodes ? `${item.episodes} episodes` : "Episode count TBA"}
+                  </p>
+                  <div className="mt-3 grid grid-cols-[1fr_44px] gap-2">
                     <button
                       type="button"
                       onClick={() => handleAdd(item, "WATCHING")}
-                      disabled={isTracked || isWatchingBusy || isPlanningBusy}
-                      className="inline-flex w-full items-center justify-center gap-2 rounded-full bg-slate-950 px-4 py-3.5 text-base font-semibold text-white transition hover:bg-slate-800 disabled:cursor-not-allowed disabled:bg-slate-300 disabled:text-slate-500 dark:bg-orange-500 dark:text-slate-950 dark:hover:bg-orange-400 dark:disabled:bg-slate-700 dark:disabled:text-slate-400"
+                      disabled={isTracked || isBusy}
+                      className="inline-flex min-h-11 items-center justify-center gap-2 rounded-xl bg-accent px-3 text-xs font-bold text-white transition-colors hover:bg-accent/90 disabled:bg-muted disabled:text-subtle"
                     >
-                      {isWatchingBusy ? <LoaderCircle className="h-4 w-4 animate-spin" /> : null}
-                      {isWatching ? <CheckCircle2 className="h-4 w-4" /> : <PlayCircle className="h-4 w-4" />}
-                      {isWatching ? "In one-click tracking" : isTracked ? "Already tracked" : "Start watching"}
+                      {isBusy ? <LoaderCircle className="h-4 w-4 animate-spin" /> : isTracked ? <Check className="h-4 w-4" /> : <Play className="h-4 w-4" />}
+                      {isTracked ? "Added" : "Watch"}
                     </button>
-
                     <button
                       type="button"
                       onClick={() => handleAdd(item, "PLANNING")}
-                      disabled={isTracked || isWatchingBusy || isPlanningBusy}
-                      className="inline-flex w-full items-center justify-center gap-2 rounded-full border border-slate-200 bg-white px-4 py-3.5 text-base font-semibold text-slate-700 transition hover:bg-slate-100 disabled:cursor-not-allowed disabled:bg-slate-100 disabled:text-slate-400 dark:border-slate-700 dark:bg-slate-950 dark:text-slate-200 dark:hover:bg-slate-900 dark:disabled:bg-slate-900 dark:disabled:text-slate-500"
+                      disabled={isTracked || isBusy}
+                      aria-label={`Add ${title} to queue`}
+                      className="inline-flex min-h-11 items-center justify-center rounded-xl border border-line bg-surface text-subtle transition-colors hover:bg-muted hover:text-ink disabled:opacity-50"
                     >
-                      {isPlanningBusy ? <LoaderCircle className="h-4 w-4 animate-spin" /> : null}
-                      {isPlanning ? <CheckCircle2 className="h-4 w-4" /> : <BookmarkPlus className="h-4 w-4" />}
-                      {isPlanning ? "In queue" : isTracked ? "Already tracked" : "Add to queue"}
+                      <BookmarkPlus className="h-4 w-4" />
                     </button>
                   </div>
-                </div>
-              </article>
-            );
-          })}
+                </article>
+              );
+            })}
+          </div>
+          {!searching && !results.length ? (
+            <p className="rounded-2xl border border-dashed border-line bg-surface p-5 text-sm text-subtle">
+              No matching titles. Try a broader title.
+            </p>
+          ) : null}
         </div>
-      ) : null}
-
-      {!searching && deferredQuery.trim().length >= 2 && !results.length ? (
-        <p className="mt-4 text-sm text-slate-500 dark:text-slate-400">
-          No matching titles yet. Try a broader search phrase.
-        </p>
       ) : null}
     </section>
   );

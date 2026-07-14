@@ -10,22 +10,23 @@ const config: Config = {
   theme: {
     extend: {
       colors: {
-        ink: "#111827",
-        ember: "#f97316",
-        sunrise: "#fde68a",
-        mist: "#eff6ff",
-        slateblue: "#1e3a8a",
+        canvas: "var(--canvas)",
+        surface: "var(--surface)",
+        muted: "var(--surface-muted)",
+        ink: "var(--ink)",
+        subtle: "var(--muted)",
+        line: "var(--border)",
+        border: "var(--border)",
+        accent: "var(--accent)",
+        "accent-soft": "var(--accent-soft)",
       },
       fontFamily: {
         display: ["var(--font-display)"],
         mono: ["var(--font-mono)"],
       },
       boxShadow: {
-        card: "0 16px 50px rgba(15, 23, 42, 0.12)",
-      },
-      backgroundImage: {
-        grain:
-          "radial-gradient(circle at top left, rgba(249, 115, 22, 0.15), transparent 30%), radial-gradient(circle at bottom right, rgba(30, 58, 138, 0.18), transparent 32%)",
+        card: "0 12px 30px color-mix(in oklch, var(--ink) 10%, transparent)",
+        float: "0 8px 24px color-mix(in oklch, var(--ink) 12%, transparent)",
       },
     },
   },

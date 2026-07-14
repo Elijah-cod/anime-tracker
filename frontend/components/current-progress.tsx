@@ -1,5 +1,6 @@
 "use client";
 
+import { Play, Plus } from "lucide-react";
 import Link from "next/link";
 import { startTransition, useEffect, useOptimistic, useState } from "react";
 
@@ -7,34 +8,19 @@ import { SafeImage } from "@/components/safe-image";
 import { incrementEpisodeProgress } from "@/lib/api";
 import { AnimeEntry } from "@/types/anime";
 
-const statusAccent: Record<string, string> = {
-  WATCHING: "bg-orange-500/15 text-orange-700 ring-orange-300 dark:text-orange-200 dark:ring-orange-500/30",
-  COMPLETED: "bg-emerald-500/15 text-emerald-700 ring-emerald-300 dark:text-emerald-200 dark:ring-emerald-500/30",
-  PAUSED: "bg-amber-500/15 text-amber-700 ring-amber-300 dark:text-amber-200 dark:ring-amber-500/30",
-  PLANNING: "bg-sky-500/15 text-sky-700 ring-sky-300 dark:text-sky-200 dark:ring-sky-500/30",
-  DROPPED: "bg-rose-500/15 text-rose-700 ring-rose-300 dark:text-rose-200 dark:ring-rose-500/30",
-};
-
-function formatScore(score: AnimeEntry["score"]): string {
-  if (score === null || score === undefined || score === "") {
-    return "No score yet";
-  }
-
-  const numericScore = typeof score === "string" ? Number.parseFloat(score) : score;
-
-  if (Number.isNaN(numericScore)) {
-    return "No score yet";
-  }
-
-  return `${numericScore.toFixed(1)} score`;
+function progressFor(entry: AnimeEntry) {
+  if (!entry.total_episodes) return 35;
+  return Math.min((entry.episodes_watched / entry.total_episodes) * 100, 100);
 }
 
 export function CurrentProgress({
   entries,
   activeUserEmail,
+  compact = false,
 }: {
   entries: AnimeEntry[];
   activeUserEmail?: string;
+  compact?: boolean;
 }) {
   const [baseEntries, setBaseEntries] = useState(entries);
   const [error, setError] = useState<string | null>(null);
@@ -64,104 +50,82 @@ export function CurrentProgress({
           current.map((item) => (item.anime_id === updated.anime_id ? updated : item)),
         );
       } catch {
-        setError("Could not sync progress right now.");
+        setError("Progress could not be synced. Try again.");
       }
     });
   }
 
   return (
-    <section className="rounded-[2rem] border border-slate-200/80 bg-white/85 p-6 shadow-card backdrop-blur dark:border-slate-800 dark:bg-slate-950/80">
-      <div className="flex items-center justify-between gap-4">
-        <div>
-          <p className="text-xs uppercase tracking-[0.3em] text-slate-500 dark:text-slate-400">
-            Current Progress
-          </p>
-          <h2 className="mt-2 text-2xl font-semibold text-slate-950 dark:text-slate-50">
-            One-click episode tracking
-          </h2>
-        </div>
+    <section>
+      <div className="mb-4 flex items-center justify-between gap-4">
+        <h2 className="text-2xl font-bold tracking-[-0.025em] text-ink">
+          {compact ? "Continue Watching" : "Currently Watching"}
+        </h2>
+        <Link href="/library" className="text-sm font-semibold text-accent hover:underline">
+          View list
+        </Link>
       </div>
 
-      <div className="mt-6 grid gap-4">
-        {watchEntries.map((entry) => (
-          <article
-            key={entry.anime_id}
-            className="grid gap-4 rounded-3xl border border-slate-200/70 bg-slate-50/80 p-4 dark:border-slate-800 dark:bg-slate-900/80 md:grid-cols-[96px_1fr_auto]"
-          >
-            <div className="relative h-28 overflow-hidden rounded-2xl">
-              {entry.cover_image ? (
-                <SafeImage src={entry.cover_image} alt={entry.title} fill className="object-cover" />
-              ) : (
-                <div className="h-full w-full bg-slate-200 dark:bg-slate-800" />
-              )}
-            </div>
-
-            <div className="space-y-3">
-              <div className="flex flex-wrap items-center gap-3">
-                <h3 className="text-lg font-semibold text-slate-950 dark:text-slate-50">
-                  {entry.title}
-                </h3>
-                <span
-                  className={`rounded-full px-3 py-1 text-xs font-semibold ring-1 ${statusAccent[entry.status] ?? ""}`}
-                >
-                  {entry.status}
-                </span>
+      {watchEntries.length ? (
+        <div className="-mx-5 flex snap-x gap-5 overflow-x-auto px-5 pb-4 sm:-mx-8 sm:px-8 lg:mx-0 lg:px-0">
+          {watchEntries.map((entry) => (
+            <article
+              key={entry.anime_id}
+              className="w-[286px] shrink-0 snap-start overflow-hidden rounded-2xl border border-line bg-surface shadow-card sm:w-[340px]"
+            >
+              <div className="relative aspect-[16/9] bg-muted">
+                <SafeImage
+                  src={entry.cover_image}
+                  alt={entry.title}
+                  fill
+                  className="object-cover"
+                  sizes="(max-width: 640px) 286px, 340px"
+                />
               </div>
-
-              <div className="space-y-2">
-                <div className="flex items-center justify-between text-sm text-slate-600 dark:text-slate-300">
-                  <span>
-                    {entry.episodes_watched} / {entry.total_episodes ?? "?"} episodes
-                  </span>
-                  <span>{formatScore(entry.score)}</span>
+              <div className="p-4">
+                <div className="flex items-start justify-between gap-3">
+                  <div className="min-w-0">
+                    <h3 className="line-clamp-2 text-base font-bold leading-6 text-ink">
+                      {entry.title}
+                    </h3>
+                    <p className="mt-1 text-sm text-subtle">
+                      Episode {entry.episodes_watched} of {entry.total_episodes ?? "?"}
+                    </p>
+                  </div>
+                  <button
+                    type="button"
+                    onClick={() => handleAdvance(entry)}
+                    aria-label={`Log the next episode of ${entry.title}`}
+                    className="flex h-11 w-11 shrink-0 items-center justify-center rounded-full bg-accent text-white transition-colors hover:bg-accent/90"
+                  >
+                    <Plus className="h-5 w-5" />
+                  </button>
                 </div>
-                <div className="h-2 rounded-full bg-slate-200 dark:bg-slate-800">
+                <div className="mt-4 h-1.5 overflow-hidden rounded-full bg-muted">
                   <div
-                    className="h-2 rounded-full bg-gradient-to-r from-orange-500 to-amber-300 transition-all"
-                    style={{
-                      width: `${
-                        entry.total_episodes
-                          ? Math.min((entry.episodes_watched / entry.total_episodes) * 100, 100)
-                          : 35
-                      }%`,
-                    }}
+                    className="h-full rounded-full bg-accent transition-[width] duration-200"
+                    style={{ width: `${progressFor(entry)}%` }}
                   />
                 </div>
               </div>
-            </div>
-
-            <div className="flex items-center">
-              <button
-                type="button"
-                onClick={() => handleAdvance(entry)}
-                className="rounded-full bg-slate-950 px-5 py-3 text-sm font-semibold text-white transition hover:bg-slate-800 dark:bg-orange-500 dark:text-slate-950 dark:hover:bg-orange-400"
-              >
-                +1 episode
-              </button>
-            </div>
-          </article>
-        ))}
-      </div>
-
-      {!watchEntries.length ? (
-        <div className="mt-6 rounded-3xl border border-dashed border-slate-300 bg-slate-50/70 p-5 text-sm text-slate-600 dark:border-slate-700 dark:bg-slate-900/70 dark:text-slate-300">
-          <p className="font-semibold text-slate-950 dark:text-slate-50">
-            No anime is in one-click tracking yet.
-          </p>
-          <p className="mt-2">
-            Use <span className="font-semibold">Discover → Start watching</span> to place an anime
-            here, or change a tracked title to <span className="font-semibold">WATCHING</span> from{" "}
-            <Link href="/library" className="underline underline-offset-4">
-              Library
-            </Link>
-            .
-          </p>
+            </article>
+          ))}
         </div>
-      ) : null}
+      ) : (
+        <div className="flex min-h-36 items-center gap-4 rounded-2xl border border-dashed border-line bg-surface p-5">
+          <div className="flex h-11 w-11 shrink-0 items-center justify-center rounded-full bg-accent-soft text-accent">
+            <Play className="h-5 w-5" />
+          </div>
+          <div>
+            <p className="font-semibold text-ink">Nothing is currently playing.</p>
+            <p className="mt-1 text-sm text-subtle">
+              Add a title from <Link href="/discover" className="font-semibold text-accent">Discover</Link>.
+            </p>
+          </div>
+        </div>
+      )}
 
-      {error ? (
-        <p className="mt-4 text-sm text-rose-600 dark:text-rose-300">{error}</p>
-      ) : null}
+      {error ? <p className="mt-2 text-sm text-red-600 dark:text-red-300">{error}</p> : null}
     </section>
   );
 }

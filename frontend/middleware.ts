@@ -1,7 +1,14 @@
 import { NextRequest, NextResponse } from "next/server";
 
 const ACCOUNT_COOKIE_NAME = "anime_tracker_user_email";
-const PROTECTED_PATHS = ["/", "/library", "/calendar", "/profile"];
+const PROTECTED_PATHS = [
+  "/",
+  "/library",
+  "/discover",
+  "/calendar",
+  "/community",
+  "/profile",
+];
 
 function hasAccountCookie(request: NextRequest): boolean {
   const value = request.cookies.get(ACCOUNT_COOKIE_NAME)?.value;
@@ -20,5 +27,5 @@ export function middleware(request: NextRequest) {
 }
 
 export const config = {
-  matcher: ["/", "/library", "/calendar", "/profile"],
+  matcher: ["/", "/library", "/discover", "/calendar", "/community", "/profile"],
 };

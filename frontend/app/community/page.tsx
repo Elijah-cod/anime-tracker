@@ -3,11 +3,10 @@ import { redirect } from "next/navigation";
 
 import { ACCOUNT_COOKIE_NAME, decodeActiveUserEmail } from "@/lib/account-session";
 import { AppShell } from "@/components/app-shell";
-import { CurrentProgress } from "@/components/current-progress";
-import { ReleaseCalendar } from "@/components/release-calendar";
-import { getCurrentUser, getEntries, getReleaseCalendar } from "@/lib/api";
+import { ReviewsPanel } from "@/components/reviews-panel";
+import { getCurrentUser, getEntries, getReviews } from "@/lib/api";
 
-export default async function CalendarPage() {
+export default async function CommunityPage() {
   const cookieStore = await cookies();
   const activeUserEmail = decodeActiveUserEmail(cookieStore.get(ACCOUNT_COOKIE_NAME)?.value);
 
@@ -20,20 +19,23 @@ export default async function CalendarPage() {
     redirect("/auth");
   }
 
-  const [entries, calendar] = await Promise.all([
+  const [entries, reviews] = await Promise.all([
     getEntries(activeUserEmail),
-    getReleaseCalendar(),
+    getReviews(activeUserEmail, { scope: "all" }),
   ]);
 
   return (
     <AppShell
-      currentPath="/calendar"
+      currentPath="/community"
       currentUser={currentUser}
-      title="Release Calendar"
-      description="Upcoming episodes shown in your local time."
+      title="Community"
+      description="Share quick thoughts and browse comments from other profiles."
     >
-      <ReleaseCalendar items={calendar} />
-      <CurrentProgress entries={entries} activeUserEmail={activeUserEmail} compact />
+      <ReviewsPanel
+        entries={entries}
+        initialReviews={reviews}
+        activeUserEmail={activeUserEmail}
+      />
     </AppShell>
   );
 }

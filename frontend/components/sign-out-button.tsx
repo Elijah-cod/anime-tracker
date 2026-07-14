@@ -6,7 +6,7 @@ import { useTransition } from "react";
 
 import { clearActiveUserEmail } from "@/lib/account-session";
 
-export function SignOutButton() {
+export function SignOutButton({ compact = false }: { compact?: boolean }) {
   const router = useRouter();
   const [isPending, startTransition] = useTransition();
 
@@ -23,10 +23,11 @@ export function SignOutButton() {
       type="button"
       onClick={handleSignOut}
       disabled={isPending}
-      className="inline-flex items-center justify-center gap-2 rounded-full border border-slate-200 bg-slate-50 px-3 py-2 text-sm font-semibold text-slate-700 transition hover:bg-slate-100 disabled:cursor-not-allowed disabled:opacity-70 dark:border-slate-800 dark:bg-slate-900 dark:text-slate-200 dark:hover:bg-slate-800 sm:px-4"
+      aria-label="Sign out"
+      className={`inline-flex min-h-11 items-center justify-center gap-2 rounded-xl border border-line bg-surface text-sm font-semibold text-subtle transition-colors hover:bg-muted hover:text-ink disabled:cursor-not-allowed disabled:opacity-60 ${compact ? "w-11 px-0" : "px-4"}`}
     >
       <LogOut className="h-4 w-4" />
-      <span className="hidden sm:inline">Sign out</span>
+      {!compact ? <span>Sign out</span> : null}
     </button>
   );
 }

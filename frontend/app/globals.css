@@ -4,18 +4,31 @@
 
 :root {
   color-scheme: light;
-  --page-bg: #fffaf2;
-  --page-ink: #0f172a;
-  --card-bg: rgba(255, 255, 255, 0.82);
-  --font-display: "Avenir Next", "Segoe UI", "Trebuchet MS", sans-serif;
-  --font-mono: "SFMono-Regular", "Cascadia Code", "IBM Plex Mono", "Menlo", monospace;
+  --canvas: oklch(0.975 0.008 255);
+  --surface: oklch(0.995 0.003 255);
+  --surface-muted: oklch(0.955 0.012 265);
+  --ink: oklch(0.22 0.025 265);
+  --muted: oklch(0.52 0.025 265);
+  --border: oklch(0.89 0.015 265);
+  --accent: oklch(0.61 0.17 272);
+  --accent-soft: oklch(0.92 0.045 272);
+  --success: oklch(0.68 0.14 155);
+  --warning: oklch(0.74 0.15 78);
+  --danger: oklch(0.62 0.2 25);
+  --font-display: -apple-system, BlinkMacSystemFont, "Segoe UI", "Helvetica Neue", sans-serif;
+  --font-mono: "SFMono-Regular", "Cascadia Code", "Menlo", monospace;
 }
 
 .dark {
   color-scheme: dark;
-  --page-bg: #020617;
-  --page-ink: #f8fafc;
-  --card-bg: rgba(2, 6, 23, 0.78);
+  --canvas: oklch(0.17 0.018 265);
+  --surface: oklch(0.205 0.02 265);
+  --surface-muted: oklch(0.245 0.024 265);
+  --ink: oklch(0.94 0.008 255);
+  --muted: oklch(0.7 0.018 255);
+  --border: oklch(0.32 0.025 265);
+  --accent: oklch(0.72 0.14 272);
+  --accent-soft: oklch(0.3 0.07 272);
 }
 
 html {
@@ -24,24 +37,32 @@ html {
 
 body {
   min-height: 100vh;
-  background:
-    radial-gradient(circle at top left, rgba(249, 115, 22, 0.17), transparent 26%),
-    radial-gradient(circle at 85% 20%, rgba(30, 58, 138, 0.16), transparent 26%),
-    linear-gradient(180deg, rgba(255, 247, 237, 1) 0%, rgba(255, 255, 255, 1) 46%, rgba(239, 246, 255, 1) 100%);
-  color: var(--page-ink);
-}
-
-.dark body {
-  background:
-    radial-gradient(circle at top left, rgba(249, 115, 22, 0.16), transparent 26%),
-    radial-gradient(circle at 85% 20%, rgba(56, 189, 248, 0.18), transparent 24%),
-    linear-gradient(180deg, rgba(2, 6, 23, 1) 0%, rgba(15, 23, 42, 1) 55%, rgba(3, 7, 18, 1) 100%);
+  overflow-x: hidden;
+  background: var(--canvas);
+  color: var(--ink);
 }
 
 * {
-  border-color: theme("colors.slate.200");
+  border-color: var(--border);
 }
 
-.dark * {
-  border-color: theme("colors.slate.800");
+::selection {
+  background: var(--accent-soft);
+  color: var(--ink);
+}
+
+:focus-visible {
+  outline: 3px solid color-mix(in oklch, var(--accent) 65%, transparent);
+  outline-offset: 3px;
+}
+
+@media (prefers-reduced-motion: reduce) {
+  *,
+  *::before,
+  *::after {
+    scroll-behavior: auto !important;
+    transition-duration: 0.01ms !important;
+    animation-duration: 0.01ms !important;
+    animation-iteration-count: 1 !important;
+  }
 }

@@ -17,6 +17,12 @@ import {
 
 const DIRECT_API_URL = process.env.NEXT_PUBLIC_API_URL ?? "http://localhost:8000/api/v1";
 const BROWSER_PROXY_API_URL = "/api/backend";
+const REQUEST_TIMEOUT_MS = 8_000;
+const LONG_REQUEST_TIMEOUT_MS = 30_000;
+
+function requestSignal(timeoutMs = REQUEST_TIMEOUT_MS): AbortSignal {
+  return AbortSignal.timeout(timeoutMs);
+}
 
 function getApiBaseUrl(): string {
   return typeof window === "undefined" ? DIRECT_API_URL : BROWSER_PROXY_API_URL;
@@ -132,6 +138,7 @@ async function fetchJson<T>(path: string, options?: FetchJsonOptions): Promise<T
       ? { cache: "no-store" as const }
       : { next: { revalidate: options?.revalidate ?? 300 } }),
     headers: buildHeaders(options?.userEmail),
+    signal: requestSignal(),
   });
 
   if (!response.ok) {
@@ -250,6 +257,7 @@ export async function incrementEpisodeProgress(
         ...entry,
         increment_by: 1,
       }),
+      signal: requestSignal(),
     });
 
     if (!response.ok) {
@@ -282,6 +290,7 @@ export async function createEntry(
       episodes_watched: 0,
       ...payload,
     }),
+    signal: requestSignal(),
   });
 
   if (!response.ok) {
@@ -303,6 +312,7 @@ export async function updateEntry(
         "Content-Type": "application/json",
       }),
       body: JSON.stringify(payload),
+      signal: requestSignal(),
     });
 
     if (!response.ok) {
@@ -328,6 +338,7 @@ export async function deleteEntry(animeId: number, userEmail?: string): Promise<
     const response = await fetch(buildApiUrl(`/entries/${animeId}`), {
       method: "DELETE",
       headers: buildHeaders(userEmail),
+      signal: requestSignal(),
     });
 
     if (!response.ok) {
@@ -375,6 +386,7 @@ export async function createReview(
         "Content-Type": "application/json",
       }),
       body: JSON.stringify(payload),
+      signal: requestSignal(),
     });
 
     if (!response.ok) {
@@ -407,6 +419,7 @@ export async function importMalList(username: string, userEmail?: string): Promi
         username,
         user_id: 1,
       }),
+      signal: requestSignal(LONG_REQUEST_TIMEOUT_MS),
     });
 
     if (!response.ok) {
@@ -470,6 +483,7 @@ export async function createUserAccount(
       "Content-Type": "application/json",
     }),
     body: JSON.stringify(payload),
+    signal: requestSignal(),
   });
 
   if (!response.ok) {

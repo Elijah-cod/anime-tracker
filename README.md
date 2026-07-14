@@ -406,7 +406,39 @@ Required environment variable:
 NEXT_PUBLIC_API_URL=https://your-backend-domain.example.com/api/v1
 ```
 
-## Render
+## FastAPI on Vercel (recommended)
+
+Deploy the API as a second Vercel project using `backend` as its root directory. The repository
+includes the Vercel entrypoint and function settings in `backend/pyproject.toml` and
+`backend/vercel.json`.
+
+Recommended settings:
+
+- Framework preset: FastAPI
+- Root directory: `backend`
+- Build command: leave empty
+- Install command: leave empty
+
+Required environment variables:
+
+- `DATABASE_URL`
+- `ALLOW_ORIGINS=https://your-frontend-domain.vercel.app`
+- `APP_ENV=production`
+- `SEED_DEMO_DATA=false`
+- `CREATE_TABLES_ON_STARTUP=false`
+
+After the backend deploys, verify `/api/v1/health`, then update the frontend project:
+
+```env
+NEXT_PUBLIC_API_URL=https://your-api-project.vercel.app/api/v1
+```
+
+Vercel runs the FastAPI application as a Python Function with Fluid compute. This avoids the
+long container wake-up associated with free sleeping web services. Normal serverless startup and
+database latency can still occur, so frontend reads have an eight-second deadline and fall back
+cleanly instead of leaving a page waiting indefinitely.
+
+## Render (legacy alternative)
 
 This repository includes a backend blueprint at [`render.yaml`](render.yaml).
 
@@ -430,9 +462,9 @@ Notes:
 
 - The backend normalizes `postgres://...` and `postgresql://...` URLs to the `psycopg` driver automatically for hosted Postgres providers.
 - Run `alembic upgrade head` from the Render shell after provisioning a fresh database and before starting production traffic.
-- Render's free web-service plan sleeps when idle. The app minimizes cold-start work, but an always-on Render instance or Railway service is required to eliminate provider wake-up latency.
+- Render's free web-service plan sleeps when idle, so it is no longer the recommended production target for this project.
 
-## Railway
+## Railway (trial alternative)
 
 This repository includes a root [`Procfile`](Procfile) for Railway-style process startup.
 
@@ -447,7 +479,7 @@ Use the same backend environment variables as Render.
 ## Suggested Release Order
 
 1. Provision PostgreSQL in Neon or Supabase.
-2. Deploy the backend and set `DATABASE_URL`.
+2. Deploy the backend from `backend` and set `DATABASE_URL`.
 3. Configure `ALLOW_ORIGINS` for the frontend domain.
 4. Deploy the frontend and set `NEXT_PUBLIC_API_URL`.
 5. Re-run a smoke test against the deployed URLs.
